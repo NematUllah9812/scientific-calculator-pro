@@ -241,14 +241,17 @@ export default function App() {
           </div>
 
           {/* Scroll-position indicator for the tab strip */}
-          <div className="relative overflow-hidden" style={{ height: px(3), marginLeft: px(8), marginRight: px(8) }}>
-            <div className="absolute inset-0 bg-white/8" style={{ borderRadius: px(3) }} />
+          <div
+            className="relative overflow-hidden"
+            style={{ height: px(1.5), marginLeft: px(90), marginRight: px(90), opacity: 0.75 }}
+          >
+            <div className="absolute inset-0 bg-white/8" style={{ borderRadius: px(2) }} />
             <div
               className={`absolute top-0 bottom-0 ${theme.accentBg}`}
               style={{
-                width: `${Math.max(12, tabScroll.ratio * 100)}%`,
-                left: `${tabScroll.frac * (100 - Math.max(12, tabScroll.ratio * 100))}%`,
-                borderRadius: px(3),
+                width: `${Math.max(14, tabScroll.ratio * 100)}%`,
+                left: `${tabScroll.frac * (100 - Math.max(14, tabScroll.ratio * 100))}%`,
+                borderRadius: px(2),
                 transition: 'left 90ms linear',
               }}
             />
