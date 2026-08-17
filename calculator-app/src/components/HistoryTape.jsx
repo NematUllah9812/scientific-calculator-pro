@@ -100,9 +100,9 @@ export default function HistoryTape({ theme, history, onClose, onClear, onRecall
                 <span className={`text-[8px] font-bold uppercase tracking-widest ${theme.accent}`}>{h.mode}</span>
                 <span className={`text-[8px] ${theme.mutedText}`}>{timeAgo(h.time)}</span>
               </div>
-              <div className={`text-[11px] font-mono break-all ${theme.mutedText}`}>{h.expression}</div>
+              <div className={`text-[11px] tabular-nums break-all ${theme.mutedText}`}>{h.expression}</div>
               <div className="flex items-end justify-between gap-2">
-                <div className="text-[15px] font-mono font-bold break-all">= {h.result}</div>
+                <div className="text-[15px] tabular-nums font-bold break-all">= {h.result}</div>
                 <div className="flex gap-1 shrink-0">
                   <button onClick={() => copy(h)} className={`${KEY_BASE} ${theme.funcKey} h-6 w-6`}>
                     {copiedId === h.id ? <Check size={11} /> : <Copy size={11} />}

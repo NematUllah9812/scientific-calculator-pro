@@ -46,6 +46,7 @@ export function formatDate(d, style = 'long') {
   const x = new Date(d);
   if (style === 'iso') return toISO(x);
   if (style === 'short') return `${MONTH_SHORT[x.getMonth()]} ${x.getDate()}, ${x.getFullYear()}`;
+  if (style === 'medium') return `${DAY_SHORT[x.getDay()]}, ${MONTH_SHORT[x.getMonth()]} ${x.getDate()}, ${x.getFullYear()}`;
   return `${DAY_SHORT[x.getDay()]}, ${MONTH_NAMES[x.getMonth()]} ${x.getDate()}, ${x.getFullYear()}`;
 }
 

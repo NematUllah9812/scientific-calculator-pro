@@ -56,7 +56,7 @@ export default function MemoryManager({ theme, banks, setBanks, onClose, onRecal
             onChange={(e) => setEntry(e.target.value)}
             inputMode="decimal"
             placeholder="Enter a number…"
-            className={`w-full mt-0.5 rounded-lg border px-2 py-2 text-[15px] font-mono ${theme.inputBg} outline-none focus:ring-2 ${theme.accentRing}`}
+            className={`w-full mt-0.5 rounded-lg border px-2 py-2 text-[15px] tabular-nums ${theme.inputBg} outline-none focus:ring-2 ${theme.accentRing}`}
           />
         </div>
 
@@ -74,7 +74,7 @@ export default function MemoryManager({ theme, banks, setBanks, onClose, onRecal
                       {id === 'M' ? 'Primary' : `Bank ${id.slice(1)}`}
                     </span>
                   </div>
-                  <span className={`text-[16px] font-mono font-bold ${active ? theme.accent : theme.mutedText}`}>{fmt(banks[id])}</span>
+                  <span className={`text-[16px] tabular-nums font-bold ${active ? theme.accent : theme.mutedText}`}>{fmt(banks[id])}</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1">
                   <button onClick={() => store(id)} disabled={!valid} className={`${KEY_BASE} ${theme.funcKey} py-1.5 text-[9px] disabled:opacity-30 flex-row gap-0.5`}>

@@ -1,171 +1,243 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { ArrowLeftRight, ChevronRight, Copy, Check, Delete } from 'lucide-react';
 import {
-  Ruler, Weight, Thermometer, Square, Box, Gauge, Clock, HardDrive,
-  Wind, Zap, Activity, Compass, ArrowUpDown, Copy, Check, Delete,
-} from 'lucide-react';
-import {
-  UNIT_CATEGORIES, CATEGORY_LIST, DEFAULT_UNITS, convert, getUnitList,
+  UNIT_CATEGORIES, convert, getUnitList, CATEGORY_LIST, DEFAULT_UNITS,
 } from '../utils/unitConverterData.js';
 import { formatResult } from '../utils/mathEngine.js';
 import { KEY_BASE } from '../utils/themeStyles.js';
+import { px, ico } from '../utils/scale.js';
 
-const ICONS = { Ruler, Weight, Thermometer, Square, Box, Gauge, Clock, HardDrive, Wind, Zap, Activity, Compass };
-
-function Select({ theme, units, feedback, label, value, onChange }) {
-  return (
-    <div className="flex-1 min-w-0">
-      <div className={`text-[8px] font-bold uppercase tracking-wider ${theme.mutedText} mb-0.5`}>{label}</div>
-      <select
-        value={value}
-        onChange={(e) => { feedback('key'); onChange(e.target.value); }}
-        className={`w-full rounded-lg border px-1.5 py-1.5 text-[11px] font-semibold ${theme.inputBg} outline-none focus:ring-2 ${theme.accentRing}`}
-      >
-        {units.map((u) => (
-          <option key={u.key} value={u.key}>{u.name} ({u.symbol})</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-export default function UnitConverter({ theme, settings, addHistory, feedback, recallValue, clearRecall }) {
+export default function UnitConverter({
+  theme, settings, addHistory, feedback, recallValue, clearRecall, scale,
+}) {
   const [catId, setCatId] = useState('length');
-  const [from, setFrom] = useState(DEFAULT_UNITS.length[0]);
-  const [to, setTo] = useState(DEFAULT_UNITS.length[1]);
-  const [input, setInput] = useState('1');
+  const [from, setFrom] = useState(DEFAULT_UNITS.length?.[0] || 'm');
+  const [to, setTo] = useState(DEFAULT_UNITS.length?.[1] || 'km');
+  const [entry, setEntry] = useState('1');
   const [copied, setCopied] = useState(false);
+  const [picker, setPicker] = useState(null); // 'from' | 'to' | null
 
-  const cat = UNIT_CATEGORIES[catId];
   const units = useMemo(() => getUnitList(catId), [catId]);
 
   useEffect(() => {
     if (recallValue !== null && recallValue !== undefined) {
-      setInput(String(recallValue));
-      clearRecall();
+      setEntry(String(recallValue)); clearRecall();
     }
   }, [recallValue, clearRecall]);
 
-  const selectCategory = (id) => {
+  const switchCat = (id) => {
     feedback('toggle');
     setCatId(id);
-    const [a, b] = DEFAULT_UNITS[id] || Object.keys(UNIT_CATEGORIES[id].units);
-    setFrom(a);
-    setTo(b);
+    const d = DEFAULT_UNITS[id];
+    const list = getUnitList(id);
+    setFrom(d?.[0] || list[0]?.key);
+    setTo(d?.[1] || list[1]?.key || list[0]?.key);
+    setPicker(null);
   };
 
-  const numeric = parseFloat(input);
-  const result = isFinite(numeric) ? convert(catId, from, to, numeric) : NaN;
-  const resultText = isFinite(result)
-    ? formatResult(result, { notation: settings.notation, precision: Math.min(settings.precision, 10), thousands: settings.thousands })
-    : '—';
-
-  const fromU = cat.units[from] || {};
-  const toU = cat.units[to] || {};
+  const value = parseFloat(entry.replace(/,/g, '')) || 0;
+  const output = useMemo(() => {
+    try {
+      const v = convert(catId, from, to, value);
+      return v === null || v === undefined || Number.isNaN(v)
+        ? '—'
+        : formatResult(v, { notation: settings.notation, precision: Math.min(settings.precision, 8), thousands: settings.thousands });
+    } catch { return '—'; }
+  }, [catId, from, to, value, settings]);
 
   const rateText = useMemo(() => {
-    const one = convert(catId, from, to, 1);
-    if (!isFinite(one)) return '';
-    return `1 ${fromU.symbol || from} = ${formatResult(one, { precision: 8, thousands: true })} ${toU.symbol || to}`;
-  }, [catId, from, to, fromU.symbol, toU.symbol]);
+    try {
+      const one = convert(catId, from, to, 1);
+      if (one === null || Number.isNaN(one)) return '';
+      const fu = UNIT_CATEGORIES[catId]?.units?.[from];
+      const tu = UNIT_CATEGORIES[catId]?.units?.[to];
+      return `1 ${fu?.symbol || from} = ${formatResult(one, { notation: 'standard', precision: 6, thousands: true })} ${tu?.symbol || to}`;
+    } catch { return ''; }
+  }, [catId, from, to]);
 
-  const swap = () => {
-    feedback('toggle');
-    setFrom(to);
-    setTo(from);
-    if (isFinite(result)) setInput(String(result));
+  const unitLabel = (k) => {
+    const u = UNIT_CATEGORIES[catId]?.units?.[k];
+    return u ? `${u.name} (${u.symbol})` : k;
   };
 
-  const push = (ch) => {
+  const digit = (d) => {
     feedback('key');
-    setInput((prev) => {
-      if (ch === '.') return prev.includes('.') ? prev : (prev || '0') + '.';
-      if (prev === '0' && ch !== '.') return ch;
-      return (prev + ch).slice(0, 16);
-    });
+    if (d === '.' && entry.includes('.')) return;
+    if (entry === '0' && d !== '.') { setEntry(d); return; }
+    if (entry.replace(/[-.]/g, '').length >= 14) return;
+    setEntry(entry + d);
   };
 
-  const copy = async () => {
+  const backspace = () => {
+    feedback('key');
+    setEntry((e) => (e.length > 1 ? e.slice(0, -1) : '0'));
+  };
+
+  const swap = () => { feedback('toggle'); setFrom(to); setTo(from); };
+
+  const copyOut = async () => {
     feedback('toggle');
-    try { await navigator.clipboard.writeText(String(resultText)); setCopied(true); setTimeout(() => setCopied(false), 1200); } catch { /* noop */ }
+    try {
+      await navigator.clipboard.writeText(String(output));
+      setCopied(true); setTimeout(() => setCopied(false), 1200);
+    } catch { /* ignore */ }
   };
 
-  const save = () => {
-    if (!isFinite(result)) return;
+  const saveResult = () => {
     feedback('equals');
+    const fu = UNIT_CATEGORIES[catId]?.units?.[from];
+    const tu = UNIT_CATEGORIES[catId]?.units?.[to];
     addHistory({
-      expression: `${input} ${fromU.symbol || from} → ${toU.symbol || to}`,
-      result: `${resultText} ${toU.symbol || to}`,
-      mode: `Convert · ${cat.name}`,
+      expression: `${entry} ${fu?.symbol || from} → ${tu?.symbol || to}`,
+      result: String(output),
+      mode: 'Convert',
     });
   };
+
+  const K = ({ label, cls, onClick, fs = 19 }) => (
+    <button onClick={onClick} className={`${KEY_BASE} ${cls}`} style={{ borderRadius: px(10), fontSize: px(fs) }}>
+      {label}
+    </button>
+  );
+
+  const Selector = ({ side, unitKey }) => (
+    <button
+      onClick={() => { feedback('toggle'); setPicker(picker === side ? null : side); }}
+      className={`flex items-center justify-between ${theme.lcdInset}`}
+      style={{
+        borderRadius: px(9),
+        padding: `${px(8)} ${px(11)}`, gap: px(8), minWidth: px(168), maxWidth: px(210),
+      }}
+    >
+      <span className={`${theme.lcdInsetText} truncate font-semibold`} style={{ fontSize: px(13), fontFamily: 'ui-monospace,monospace' }}>
+        {unitLabel(unitKey)}
+      </span>
+      <ChevronRight size={ico(scale, 13)} className={theme.lcdInsetText} style={{ opacity: 0.75 }} />
+    </button>
+  );
+
+  const outLen = String(output).length;
+  const outSize = outLen > 16 ? 15 : outLen > 13 ? 18 : outLen > 10 ? 21 : outLen > 7 ? 25 : 29;
 
   return (
-    <div className="h-full flex flex-col p-1.5 gap-1.5 overflow-hidden">
-      {/* Category strip */}
-      <div className="shrink-0 flex gap-1 overflow-x-auto no-scrollbar pb-0.5">
-        {CATEGORY_LIST.map((c) => {
-          const Icon = ICONS[c.icon] || Ruler;
-          const active = c.id === catId;
-          return (
-            <button
-              key={c.id}
-              onClick={() => selectCategory(c.id)}
-              className={`shrink-0 flex flex-col items-center gap-0.5 rounded-lg border px-2 py-1
-                ${active ? theme.tabActive : `${theme.panelBg} ${theme.panelBorder} ${theme.mutedText}`}`}
-            >
-              <Icon size={13} />
-              <span className="text-[8px] font-bold uppercase tracking-wide">{c.name}</span>
-            </button>
-          );
-        })}
+    <div className="h-full flex flex-col overflow-hidden" style={{ paddingLeft: px(8.4), paddingRight: px(8.4), paddingBottom: px(8), gap: px(7) }}>
+      {/* ---- category chips ---- */}
+      <div className="shrink-0 flex overflow-x-auto no-scrollbar" style={{ gap: px(5), marginTop: px(4) }}>
+        {CATEGORY_LIST.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => switchCat(c.id)}
+            className={`shrink-0 ${catId === c.id ? theme.segActive : `${theme.chipBg} ${theme.chipText}`}`}
+            style={{ borderRadius: px(8), padding: `${px(6)} ${px(11)}`, fontSize: px(12), fontWeight: 700 }}
+          >
+            {c.name}
+          </button>
+        ))}
       </div>
 
-      {/* LCD */}
-      <div className={`shrink-0 rounded-xl border-2 ${theme.lcdBorder} ${theme.lcdBg} ${theme.lcdGlow} p-2 lcd-scanlines`}>
-        <div className="flex items-center justify-between mb-1">
-          <span className={`text-[8px] font-bold uppercase tracking-widest ${theme.lcdHeader}`}>{cat.name}</span>
-          <button onClick={copy} className={`${theme.lcdHeader} opacity-70 active:scale-90`}>
-            {copied ? <Check size={12} /> : <Copy size={12} />}
+      {/* ---- LCD ---- */}
+      <div
+        className={`shrink-0 relative ${theme.lcdBg} border-2 ${theme.lcdBorder} lcd-scanlines overflow-hidden`}
+        style={{ borderRadius: px(14), padding: px(11) }}
+      >
+        <div className={`absolute inset-0 ${theme.lcdGlow} pointer-events-none`} />
+
+        <div className="relative flex items-center justify-between" style={{ gap: px(8) }}>
+          <Selector side="from" unitKey={from} />
+          <span
+            className={`font-bold truncate ${theme.lcdResult}`}
+            style={{ fontSize: px(24), fontVariantNumeric: 'tabular-nums' }}
+          >
+            {entry}
+          </span>
+        </div>
+
+        {/* swap FAB */}
+        <div className="relative flex justify-center" style={{ height: px(4) }}>
+          <button
+            onClick={swap}
+            className={`${theme.panelBg} flex items-center justify-center absolute active:scale-90`}
+            style={{ width: px(30), height: px(30), borderRadius: px(15), top: px(-11), zIndex: 2 }}
+          >
+            <ArrowLeftRight size={ico(scale, 15)} className={theme.accent} />
           </button>
         </div>
-        <div className="text-right">
-          <div className={`text-[13px] font-mono ${theme.lcdFormula} truncate`}>
-            {input || '0'} <span className="opacity-70">{fromU.symbol || from}</span>
+
+        <div className="relative flex items-center justify-between" style={{ gap: px(8), marginTop: px(13) }}>
+          <Selector side="to" unitKey={to} />
+          <div className="flex items-center min-w-0" style={{ gap: px(7) }}>
+            <span
+              className={`font-bold truncate ${theme.lcdResult}`}
+              style={{ fontSize: px(outSize), fontVariantNumeric: 'tabular-nums' }}
+            >
+              {output}
+            </span>
+            <button onClick={copyOut} className={theme.lcdHeader} style={{ opacity: 0.8 }}>
+              {copied ? <Check size={ico(scale, 14)} /> : <Copy size={ico(scale, 14)} />}
+            </button>
           </div>
-          <div className={`text-[26px] leading-tight font-mono font-bold ${theme.lcdResult} truncate`}>
-            {resultText}
-          </div>
-          <div className={`text-[10px] font-mono ${theme.lcdPreview} truncate`}>{toU.name} · {rateText}</div>
         </div>
+
+        {rateText && (
+          <div className={`relative text-center ${theme.lcdPreview}`} style={{ fontSize: px(10), marginTop: px(7) }}>
+            {rateText}
+          </div>
+        )}
       </div>
 
-      {/* Unit pickers */}
-      <div className={`shrink-0 rounded-xl border ${theme.panelBorder} ${theme.panelBg} p-2 flex items-end gap-1.5`}>
-        <Select theme={theme} units={units} feedback={feedback} label="From" value={from} onChange={setFrom} />
-        <button onClick={swap} className={`${KEY_BASE} ${theme.opKey} h-[30px] w-9 shrink-0`}>
-          <ArrowUpDown size={14} />
-        </button>
-        <Select theme={theme} units={units} feedback={feedback} label="To" value={to} onChange={setTo} />
-      </div>
+      {/* ---- unit picker (overlays the keypad area) ---- */}
+      {picker ? (
+        <div
+          className={`flex-1 min-h-0 overflow-y-auto thin-scroll ${theme.panelBg} border ${theme.panelBorder}`}
+          style={{ borderRadius: px(11), padding: px(7) }}
+        >
+          <div className={theme.mutedText} style={{ fontSize: px(10), fontWeight: 700, marginBottom: px(6) }}>
+            SELECT {picker === 'from' ? 'SOURCE' : 'TARGET'} UNIT
+          </div>
+          <div className="grid grid-cols-2" style={{ gap: px(5) }}>
+            {units.map((u) => {
+              const active = (picker === 'from' ? from : to) === u.key;
+              return (
+                <button
+                  key={u.key}
+                  onClick={() => {
+                    feedback('key');
+                    if (picker === 'from') setFrom(u.key); else setTo(u.key);
+                    setPicker(null);
+                  }}
+                  className={`text-left truncate ${active ? theme.segActive : `${theme.chipBg} ${theme.chipText}`}`}
+                  style={{ borderRadius: px(8), padding: `${px(8)} ${px(9)}`, fontSize: px(12), fontWeight: 600 }}
+                >
+                  {u.name} ({u.symbol})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 grid grid-cols-4" style={{ gap: px(6) }}>
+          <K label="7" cls={theme.numKey} onClick={() => digit('7')} />
+          <K label="8" cls={theme.numKey} onClick={() => digit('8')} />
+          <K label="9" cls={theme.numKey} onClick={() => digit('9')} />
+          <K label={<Delete size={ico(scale, 18)} />} cls={theme.ceKey} onClick={backspace} />
 
-      {/* Keypad */}
-      <div className="flex-1 min-h-0 grid grid-cols-4 gap-1.5" style={{ gridTemplateRows: 'repeat(4, minmax(0, 1fr))' }}>
-        {['7', '8', '9'].map((d) => <button key={d} onClick={() => push(d)} className={`${KEY_BASE} ${theme.numKey} text-lg`}>{d}</button>)}
-        <button onClick={() => { feedback('clear'); setInput(''); }} className={`${KEY_BASE} ${theme.clearKey} text-sm`}>AC</button>
+          <K label="4" cls={theme.numKey} onClick={() => digit('4')} />
+          <K label="5" cls={theme.numKey} onClick={() => digit('5')} />
+          <K label="6" cls={theme.numKey} onClick={() => digit('6')} />
+          <K label="C" cls={theme.clearKey} fs={17} onClick={() => { feedback('clear'); setEntry('0'); }} />
 
-        {['4', '5', '6'].map((d) => <button key={d} onClick={() => push(d)} className={`${KEY_BASE} ${theme.numKey} text-lg`}>{d}</button>)}
-        <button onClick={() => { feedback('key'); setInput((p) => p.slice(0, -1)); }} className={`${KEY_BASE} ${theme.ceKey}`}><Delete size={16} /></button>
+          <K label="1" cls={theme.numKey} onClick={() => digit('1')} />
+          <K label="2" cls={theme.numKey} onClick={() => digit('2')} />
+          <K label="3" cls={theme.numKey} onClick={() => digit('3')} />
+          <K label="±" cls={theme.numKey} fs={17}
+             onClick={() => { feedback('key'); setEntry((e) => (e.startsWith('-') ? e.slice(1) : '-' + e)); }} />
 
-        {['1', '2', '3'].map((d) => <button key={d} onClick={() => push(d)} className={`${KEY_BASE} ${theme.numKey} text-lg`}>{d}</button>)}
-        <button
-          onClick={() => { feedback('key'); setInput((p) => (p.startsWith('-') ? p.slice(1) : '-' + p)); }}
-          className={`${KEY_BASE} ${theme.funcKey} text-sm`}
-        >±</button>
-
-        <button onClick={() => push('0')} className={`${KEY_BASE} ${theme.numKey} text-lg`}>0</button>
-        <button onClick={() => push('.')} className={`${KEY_BASE} ${theme.numKey} text-lg`}>.</button>
-        <button onClick={save} className={`${KEY_BASE} ${theme.equalKey} col-span-2 text-sm`}>Save Result</button>
-      </div>
+          <K label="0" cls={theme.numKey} onClick={() => digit('0')} />
+          <K label="00" cls={theme.numKey} fs={17} onClick={() => { digit('0'); digit('0'); }} />
+          <K label="." cls={theme.numKey} onClick={() => digit('.')} />
+          <K label="OK" cls={theme.equalKey} fs={17} onClick={saveResult} />
+        </div>
+      )}
     </div>
   );
 }

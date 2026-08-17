@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Copy, Check, Delete } from 'lucide-react';
+import { Copy, Check, Delete, Percent, Divide, X, Minus, Plus, Equal, Sigma } from 'lucide-react';
 import { evaluate, formatResult, cleanFloat } from '../utils/mathEngine.js';
-import { KEY_BASE } from '../utils/themeStyles.js';
+import { px, ico } from '../utils/scale.js';
 
-export default function SimpleCalculator({ theme, settings, addHistory, feedback, recallValue, clearRecall }) {
+export default function SimpleCalculator({
+  theme, settings, addHistory, feedback, recallValue, clearRecall, scale, updateSettings,
+}) {
   const [display, setDisplay] = useState('0');
   const [accumulator, setAccumulator] = useState(null);
   const [pendingOp, setPendingOp] = useState(null);
@@ -36,12 +38,11 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
     setDisplay(display + d);
   };
 
-  const applyPending = (next) => {
+  const applyPending = () => {
     const cur = parseFloat(display.replace(/,/g, ''));
     if (accumulator === null || pendingOp === null) return cur;
     try {
-      const res = evaluate(`${accumulator}${pendingOp}${cur}`, { angleMode: settings.angleMode });
-      return res;
+      return evaluate(`${accumulator}${pendingOp}${cur}`, { angleMode: settings.angleMode });
     } catch {
       return NaN;
     }
@@ -55,10 +56,7 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
     if (accumulator !== null && pendingOp && !waitingOperand) {
       const res = applyPending();
       if (Number.isNaN(res)) {
-        setDisplay('Error');
-        setAccumulator(null);
-        setPendingOp(null);
-        return;
+        setDisplay('Error'); setAccumulator(null); setPendingOp(null); return;
       }
       setAccumulator(res);
       setDisplay(fmt(res));
@@ -78,10 +76,7 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
     const res = applyPending();
     if (Number.isNaN(res) || !isFinite(res)) {
       feedback('error');
-      setDisplay('Error');
-      setAccumulator(null);
-      setPendingOp(null);
-      setExpression('');
+      setDisplay('Error'); setAccumulator(null); setPendingOp(null); setExpression('');
       return;
     }
     const opSym = pendingOp === '*' ? '×' : pendingOp === '/' ? '÷' : pendingOp === '-' ? '−' : pendingOp;
@@ -96,17 +91,8 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
 
   const clearAll = () => {
     feedback('clear');
-    setDisplay('0');
-    setAccumulator(null);
-    setPendingOp(null);
-    setWaitingOperand(false);
-    setExpression('');
-  };
-
-  const clearEntry = () => {
-    feedback('clear');
-    setDisplay('0');
-    setWaitingOperand(false);
+    setDisplay('0'); setAccumulator(null); setPendingOp(null);
+    setWaitingOperand(false); setExpression('');
   };
 
   const backspace = () => {
@@ -116,38 +102,14 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
     setDisplay(s === '-' ? '0' : s);
   };
 
-  const toggleSign = () => {
-    feedback('key');
-    if (display === '0' || display === 'Error') return;
-    setDisplay(display.startsWith('-') ? display.slice(1) : '-' + display);
-  };
-
   const percent = () => {
     feedback('key');
     const cur = parseFloat(display.replace(/,/g, ''));
     if (Number.isNaN(cur)) return;
-    // Contextual: 200 + 10% -> 10% of 200
     if (accumulator !== null && (pendingOp === '+' || pendingOp === '-')) {
       setDisplay(fmt(cleanFloat((accumulator * cur) / 100)));
     } else {
       setDisplay(fmt(cleanFloat(cur / 100)));
-    }
-  };
-
-  const unary = (kind) => {
-    feedback('key');
-    const cur = parseFloat(display.replace(/,/g, ''));
-    if (Number.isNaN(cur)) return;
-    try {
-      let r;
-      if (kind === 'sqrt') r = evaluate(`sqrt(${cur})`);
-      else if (kind === 'sq') r = cleanFloat(cur * cur);
-      else if (kind === 'inv') r = evaluate(`inv(${cur})`);
-      setDisplay(fmt(r));
-      setWaitingOperand(true);
-    } catch {
-      feedback('error');
-      setDisplay('Error');
     }
   };
 
@@ -157,12 +119,9 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
       await navigator.clipboard.writeText(display);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   };
 
-  // Physical keyboard support
   useEffect(() => {
     const onKey = (e) => {
       const k = e.key;
@@ -178,70 +137,97 @@ export default function SimpleCalculator({ theme, settings, addHistory, feedback
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const Btn = ({ children, cls, onClick, span, big }) => (
+  /* Round keys, sized to fill the available area evenly. */
+  const Round = ({ children, cls, onClick, fs = 22 }) => (
     <button
       onClick={onClick}
-      className={`${KEY_BASE} ${cls} ${span ? 'col-span-2' : ''} ${big ? 'text-2xl' : 'text-xl'}`}
+      className={`${cls} flex items-center justify-center rounded-full aspect-square w-full
+        transition-[transform,background-color] duration-75 active:scale-95 font-medium`}
+      style={{ fontSize: px(fs) }}
     >
       {children}
     </button>
   );
 
+  const resultSize = display.length > 14 ? 30 : display.length > 10 ? 38 : 46;
+
   return (
-    <div className="h-full flex flex-col p-2 gap-2">
-      {/* Display */}
-      <div className={`shrink-0 relative rounded-xl border-2 ${theme.lcdBg} ${theme.lcdBorder} p-3 lcd-scanlines overflow-hidden`}>
+    <div className="h-full flex flex-col" style={{ padding: px(12), gap: px(10) }}>
+      {/* ================= LCD ================= */}
+      <div
+        className={`shrink-0 relative ${theme.lcdBg} border-2 ${theme.lcdBorder} lcd-scanlines overflow-hidden flex flex-col`}
+        style={{ borderRadius: px(14), padding: px(14), height: px(196) }}
+      >
         <div className={`absolute inset-0 ${theme.lcdGlow} pointer-events-none`} />
-        <div className="relative flex items-start justify-between h-4">
-          <span className={`text-[9px] font-bold tracking-widest ${theme.lcdHeader}`}>
-            {pendingOp ? 'CALCULATING' : 'READY'}
+        <div className="relative flex items-start justify-between">
+          <span
+            className={`font-bold uppercase ${theme.lcdHeader}`}
+            style={{ fontSize: px(11), letterSpacing: px(0.8) }}
+          >
+            Simple Calculator
           </span>
-          <button onClick={copy} className={`${theme.lcdHeader} opacity-70 active:opacity-100`}>
-            {copied ? <Check size={12} /> : <Copy size={12} />}
+          <button onClick={copy} className={`${theme.lcdHeader} opacity-80 active:scale-90`}>
+            {copied ? <Check size={ico(scale, 15)} /> : <Copy size={ico(scale, 15)} />}
           </button>
         </div>
-        <div className={`relative h-4 text-right text-[11px] font-mono truncate ${theme.lcdPreview}`}>
-          {expression || '\u00A0'}
-        </div>
-        <div
-          className={`relative text-right font-mono font-bold tabular-nums truncate ${theme.lcdResult}`}
-          style={{ fontSize: display.length > 12 ? '1.6rem' : display.length > 9 ? '2rem' : '2.6rem', lineHeight: 1.15 }}
-        >
-          {display}
+
+        <div className="relative flex-1 flex flex-col justify-end text-right">
+          <div
+            className={`truncate ${theme.lcdPreview}`}
+            style={{ fontSize: px(13), marginBottom: px(6), fontVariantNumeric: 'tabular-nums' }}
+          >
+            {expression || (
+              <span style={{ opacity: 0.55 }}>
+                <span className={theme.lcdResult} style={{ opacity: 0.5 }}>▌</span> 0
+              </span>
+            )}
+          </div>
+          <div
+            className={`font-bold truncate ${theme.lcdResult}`}
+            style={{ fontSize: px(resultSize), lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}
+          >
+            {display}
+          </div>
         </div>
       </div>
 
-      {/* Keypad */}
-      <div className="flex-1 min-h-0 grid grid-cols-4 grid-rows-6 gap-1.5">
-        <Btn cls={theme.funcKey} onClick={() => unary('sq')}>x²</Btn>
-        <Btn cls={theme.funcKey} onClick={() => unary('sqrt')}>√x</Btn>
-        <Btn cls={theme.funcKey} onClick={() => unary('inv')}>¹⁄ₓ</Btn>
-        <Btn cls={theme.funcKey} onClick={percent}>%</Btn>
+      {/* ================= Round keypad ================= */}
+      <div
+        className="flex-1 min-h-0 grid grid-cols-4 place-items-center"
+        style={{ gap: px(10), paddingTop: px(6) }}
+      >
+        <Round cls={theme.clearKey} onClick={clearAll} fs={19}>AC</Round>
+        <Round cls={theme.numKey} onClick={percent}><Percent size={ico(scale, 21)} /></Round>
+        <Round cls={theme.numKey} onClick={backspace}><Delete size={ico(scale, 22)} /></Round>
+        <Round cls={theme.opKey} onClick={() => handleOperator('÷')}><Divide size={ico(scale, 22)} /></Round>
 
-        <Btn cls={theme.clearKey} onClick={clearAll}>AC</Btn>
-        <Btn cls={theme.ceKey} onClick={clearEntry}>CE</Btn>
-        <Btn cls={theme.ceKey} onClick={backspace}><Delete size={20} /></Btn>
-        <Btn cls={theme.opKey} onClick={() => handleOperator('÷')}>÷</Btn>
+        <Round cls={theme.numKey} onClick={() => inputDigit('7')}>7</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('8')}>8</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('9')}>9</Round>
+        <Round cls={theme.opKey} onClick={() => handleOperator('×')}><X size={ico(scale, 21)} /></Round>
 
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('7')}>7</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('8')}>8</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('9')}>9</Btn>
-        <Btn cls={theme.opKey} onClick={() => handleOperator('×')}>×</Btn>
+        <Round cls={theme.numKey} onClick={() => inputDigit('4')}>4</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('5')}>5</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('6')}>6</Round>
+        <Round cls={theme.opKey} onClick={() => handleOperator('−')}><Minus size={ico(scale, 21)} /></Round>
 
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('4')}>4</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('5')}>5</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('6')}>6</Btn>
-        <Btn cls={theme.opKey} onClick={() => handleOperator('−')}>−</Btn>
+        <Round cls={theme.numKey} onClick={() => inputDigit('1')}>1</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('2')}>2</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('3')}>3</Round>
+        <Round cls={theme.opKey} onClick={() => handleOperator('+')}><Plus size={ico(scale, 21)} /></Round>
 
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('1')}>1</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('2')}>2</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('3')}>3</Btn>
-        <Btn cls={theme.opKey} onClick={() => handleOperator('+')}>+</Btn>
-
-        <Btn cls={theme.numKey} onClick={toggleSign}>±</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('0')}>0</Btn>
-        <Btn cls={theme.numKey} big onClick={() => inputDigit('.')}>.</Btn>
-        <Btn cls={theme.equalKey} big onClick={handleEquals}>=</Btn>
+        {/* Bottom-left tile mirrors the reference: a small "scientific" hint badge */}
+        <Round cls={theme.numKey} onClick={() => { feedback('toggle'); updateSettings?.({}); }} fs={13}>
+          <span
+            className={`flex items-center justify-center border rounded ${theme.panelBorder}`}
+            style={{ width: px(26), height: px(26), fontSize: px(9), lineHeight: 1.05 }}
+          >
+            <span style={{ display: 'block' }}>√ π<br />e =</span>
+          </span>
+        </Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('0')}>0</Round>
+        <Round cls={theme.numKey} onClick={() => inputDigit('.')}>.</Round>
+        <Round cls={theme.equalKey} onClick={handleEquals}><Equal size={ico(scale, 23)} /></Round>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
-  Calculator, FlaskConical, Binary, BarChart3, Ruler, CalendarDays,
-  Settings as SettingsIcon, History, Save, Package,
+  Hash, FlaskConical, Binary, BarChart3, Scale, CalendarDays,
+  Settings as SettingsIcon, History, Database, Calculator,
 } from 'lucide-react';
 
 import SimpleCalculator from './components/SimpleCalculator.jsx';
@@ -13,19 +13,19 @@ import DateCalculator from './components/DateCalculator.jsx';
 import HistoryTape from './components/HistoryTape.jsx';
 import MemoryManager from './components/MemoryManager.jsx';
 import SettingsModal from './components/SettingsModal.jsx';
-import ApkDownloadModal from './components/ApkDownloadModal.jsx';
 
-import { getTheme, DEFAULT_THEME, TAB_BASE } from './utils/themeStyles.js';
+import { getTheme, DEFAULT_THEME } from './utils/themeStyles.js';
 import { load, save, STORAGE_KEYS } from './utils/safeStorage.js';
 import { feedback, unlockAudio } from './utils/audioHaptics.js';
+import { useScale, px, ico, DESIGN_W, DESIGN_H } from './utils/scale.js';
 
 const MODES = [
-  { id: 'simple', label: 'Simple', Icon: Calculator },
-  { id: 'scientific', label: 'Science', Icon: FlaskConical },
-  { id: 'programmer', label: 'Prog', Icon: Binary },
-  { id: 'statistics', label: 'Stats', Icon: BarChart3 },
-  { id: 'converter', label: 'Convert', Icon: Ruler },
-  { id: 'date', label: 'Date', Icon: CalendarDays },
+  { id: 'simple', label: 'Simple', Icon: Hash },
+  { id: 'scientific', label: 'Scientific', Icon: FlaskConical },
+  { id: 'programmer', label: 'Programmer', Icon: Binary },
+  { id: 'statistics', label: 'Statistics', Icon: BarChart3 },
+  { id: 'converter', label: 'Converter', Icon: Scale },
+  { id: 'date', label: 'Date/Time', Icon: CalendarDays },
 ];
 
 const DEFAULT_SETTINGS = {
@@ -41,7 +41,9 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function App() {
-  const [mode, setMode] = useState(() => load(STORAGE_KEYS.lastMode, 'scientific'));
+  const scale = useScale();
+
+  const [mode, setMode] = useState(() => load(STORAGE_KEYS.lastMode, 'simple'));
   const [settings, setSettings] = useState(() => ({
     ...DEFAULT_SETTINGS,
     ...load(STORAGE_KEYS.settings, {}),
@@ -54,8 +56,11 @@ export default function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showMemory, setShowMemory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showApk, setShowApk] = useState(false);
   const [recallValue, setRecallValue] = useState(null);
+
+  const tabStripRef = useRef(null);
+  const tabRefs = useRef({});
+  const [tabScroll, setTabScroll] = useState({ frac: 0, ratio: 1 });
 
   const theme = useMemo(() => getTheme(settings.theme), [settings.theme]);
 
@@ -63,6 +68,32 @@ export default function App() {
   useEffect(() => save(STORAGE_KEYS.history, history.slice(0, 200)), [history]);
   useEffect(() => save(STORAGE_KEYS.memory, memoryBanks), [memoryBanks]);
   useEffect(() => save(STORAGE_KEYS.lastMode, mode), [mode]);
+
+  /* Keep the active tab visible in the scrolling strip. */
+  useEffect(() => {
+    const el = tabRefs.current[mode];
+    if (el?.scrollIntoView) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [mode]);
+
+  /* Track horizontal scroll of the tab strip to drive the progress bar. */
+  useEffect(() => {
+    const strip = tabStripRef.current;
+    if (!strip) return;
+    const update = () => {
+      const max = strip.scrollWidth - strip.clientWidth;
+      setTabScroll({
+        frac: max > 0 ? strip.scrollLeft / max : 0,
+        ratio: strip.scrollWidth > 0 ? strip.clientWidth / strip.scrollWidth : 1,
+      });
+    };
+    update();
+    strip.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(strip);
+    return () => { strip.removeEventListener('scroll', update); ro.disconnect(); };
+  }, []);
 
   useEffect(() => {
     const unlock = () => {
@@ -83,7 +114,6 @@ export default function App() {
   }, []);
 
   const updateSettings = useCallback((patch) => setSettings((s) => ({ ...s, ...patch })), []);
-
   const fb = useCallback((variant = 'key') => feedback(settings, variant), [settings]);
 
   const handleTab = (id) => {
@@ -104,133 +134,175 @@ export default function App() {
     feedback: fb,
     recallValue,
     clearRecall: () => setRecallValue(null),
+    scale,
   };
 
   const renderMode = () => {
     switch (mode) {
-      case 'simple':
-        return <SimpleCalculator {...shared} />;
-      case 'scientific':
-        return <ScientificCalculator {...shared} />;
-      case 'programmer':
-        return <ProgrammerCalculator {...shared} />;
-      case 'statistics':
-        return <StatisticsCalculator {...shared} />;
-      case 'converter':
-        return <UnitConverter {...shared} />;
-      case 'date':
-        return <DateCalculator {...shared} />;
-      default:
-        return <ScientificCalculator {...shared} />;
+      case 'simple': return <SimpleCalculator {...shared} />;
+      case 'scientific': return <ScientificCalculator {...shared} />;
+      case 'programmer': return <ProgrammerCalculator {...shared} />;
+      case 'statistics': return <StatisticsCalculator {...shared} />;
+      case 'converter': return <UnitConverter {...shared} />;
+      case 'date': return <DateCalculator {...shared} />;
+      default: return <ScientificCalculator {...shared} />;
     }
   };
 
   return (
-    <div className={`h-full w-full flex flex-col ${theme.appBg} ${theme.bodyText} overflow-hidden`}>
-      {/* ---------- Top bar ---------- */}
-      <header
-        className={`shrink-0 ${theme.headerBg} border-b ${theme.frameBorder} safe-top`}
+    <div className={`w-full h-full flex justify-center ${theme.appBg}`}>
+      {/* Fixed-aspect app canvas: 412 x 929 design units scaled by --u */}
+      <div
+        className={`relative flex flex-col overflow-hidden ${theme.appBg} ${theme.bodyText}`}
+        style={{ width: px(DESIGN_W), height: '100%', maxHeight: px(DESIGN_H) }}
       >
-        <div className="flex items-center justify-between px-2.5 h-11">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className={`w-6 h-6 rounded-md ${theme.accentBg} flex items-center justify-center shrink-0`}>
-              <Calculator size={14} className="text-white" />
+        {/* ================= Header ================= */}
+        <header className={`shrink-0 ${theme.headerBg}`} style={{ paddingTop: 'env(safe-area-inset-top,0px)' }}>
+          <div
+            className="flex items-center justify-between"
+            style={{ height: px(52), paddingLeft: px(12), paddingRight: px(12) }}
+          >
+            <div className="flex items-center min-w-0" style={{ gap: px(9) }}>
+              <div
+                className={`${theme.accentBg} flex items-center justify-center shrink-0`}
+                style={{ width: px(30), height: px(30), borderRadius: px(9) }}
+              >
+                <Calculator size={ico(scale, 17)} className="text-white" strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0 leading-none">
+                <div
+                  className="font-extrabold tracking-tight truncate"
+                  style={{ fontSize: px(13.5), letterSpacing: px(0.2) }}
+                >
+                  SCIENTIFIC PRO
+                </div>
+                <div
+                  className={`${theme.accent} font-bold uppercase truncate`}
+                  style={{ fontSize: px(8.5), marginTop: px(2.5), letterSpacing: px(0.6) }}
+                >
+                  {theme.name}
+                </div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <div className="text-[11px] font-extrabold tracking-tight leading-none truncate">
-                Scientific Calculator Pro
-              </div>
-              <div className={`text-[8px] ${theme.mutedText} leading-none mt-0.5 uppercase tracking-widest`}>
-                {MODES.find((m) => m.id === mode)?.label} Mode
-              </div>
+
+            <div className="flex items-center shrink-0" style={{ gap: px(14) }}>
+              <IconBtn
+                theme={theme} scale={scale} title="History"
+                onClick={() => { fb('toggle'); setShowHistory(true); }}
+                dot={history.length > 0}
+              >
+                <History size={ico(scale, 19)} />
+              </IconBtn>
+              <IconBtn
+                theme={theme} scale={scale} title="Memory"
+                onClick={() => { fb('toggle'); setShowMemory(true); }}
+                dot={memoryActive}
+              >
+                <Database size={ico(scale, 19)} />
+              </IconBtn>
+              <IconBtn
+                theme={theme} scale={scale} title="Settings"
+                onClick={() => { fb('toggle'); setShowSettings(true); }}
+              >
+                <SettingsIcon size={ico(scale, 19)} />
+              </IconBtn>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
-            <IconBtn theme={theme} onClick={() => { fb('toggle'); setShowMemory(true); }} active={memoryActive} title="Memory">
-              <Save size={15} />
-            </IconBtn>
-            <IconBtn theme={theme} onClick={() => { fb('toggle'); setShowHistory(true); }} badge={history.length} title="History">
-              <History size={15} />
-            </IconBtn>
-            <IconBtn theme={theme} onClick={() => { fb('toggle'); setShowApk(true); }} title="Get APK">
-              <Package size={15} />
-            </IconBtn>
-            <IconBtn theme={theme} onClick={() => { fb('toggle'); setShowSettings(true); }} title="Settings">
-              <SettingsIcon size={15} />
-            </IconBtn>
+          {/* ================= Mode tabs ================= */}
+          <div
+            ref={tabStripRef}
+            className="flex overflow-x-auto no-scrollbar"
+            style={{ gap: px(6), paddingLeft: px(8), paddingRight: px(8), paddingBottom: px(7) }}
+          >
+            {MODES.map(({ id, label, Icon }) => {
+              const active = mode === id;
+              return (
+                <button
+                  key={id}
+                  ref={(el) => { tabRefs.current[id] = el; }}
+                  onClick={() => handleTab(id)}
+                  className={`shrink-0 flex items-center ${active ? theme.tabActive : theme.tabInactive}`}
+                  style={{
+                    gap: px(6),
+                    height: px(34),
+                    paddingLeft: px(13),
+                    paddingRight: px(13),
+                    borderRadius: px(10),
+                    fontSize: px(13),
+                    fontWeight: active ? 700 : 600,
+                  }}
+                >
+                  <Icon size={ico(scale, 14)} strokeWidth={active ? 2.6 : 2} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </header>
 
-      {/* ---------- Active mode ---------- */}
-      <main className="flex-1 min-h-0 overflow-hidden">{renderMode()}</main>
+          {/* Scroll-position indicator for the tab strip */}
+          <div className="relative overflow-hidden" style={{ height: px(3), marginLeft: px(8), marginRight: px(8) }}>
+            <div className="absolute inset-0 bg-white/8" style={{ borderRadius: px(3) }} />
+            <div
+              className={`absolute top-0 bottom-0 ${theme.accentBg}`}
+              style={{
+                width: `${Math.max(12, tabScroll.ratio * 100)}%`,
+                left: `${tabScroll.frac * (100 - Math.max(12, tabScroll.ratio * 100))}%`,
+                borderRadius: px(3),
+                transition: 'left 90ms linear',
+              }}
+            />
+          </div>
+        </header>
 
-      {/* ---------- Bottom tab bar ---------- */}
-      <nav className={`shrink-0 ${theme.headerBg} border-t ${theme.frameBorder} safe-bottom`}>
-        <div className="grid grid-cols-6 gap-0.5 px-1 py-1">
-          {MODES.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              onClick={() => handleTab(id)}
-              className={`${TAB_BASE} ${mode === id ? theme.tabActive : theme.tabInactive}`}
-            >
-              <Icon size={15} strokeWidth={mode === id ? 2.6 : 2} />
-              <span className="text-[8px]">{label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+        {/* ================= Active mode ================= */}
+        <main className="flex-1 min-h-0 overflow-hidden">{renderMode()}</main>
 
-      {/* ---------- Modals ---------- */}
-      {showHistory && (
-        <HistoryTape
-          theme={theme}
-          history={history}
-          onClose={() => setShowHistory(false)}
-          onClear={() => setHistory([])}
-          onRecall={(v) => { setRecallValue(String(v)); setShowHistory(false); }}
-          feedback={fb}
-        />
-      )}
-      {showMemory && (
-        <MemoryManager
-          theme={theme}
-          banks={memoryBanks}
-          setBanks={setMemoryBanks}
-          onClose={() => setShowMemory(false)}
-          onRecall={(v) => { setRecallValue(String(v)); setShowMemory(false); }}
-          settings={settings}
-          feedback={fb}
-        />
-      )}
-      {showSettings && (
-        <SettingsModal
-          theme={theme}
-          settings={settings}
-          updateSettings={updateSettings}
-          onClose={() => setShowSettings(false)}
-          feedback={fb}
-        />
-      )}
-      {showApk && <ApkDownloadModal theme={theme} onClose={() => setShowApk(false)} />}
+        {/* ================= Modals ================= */}
+        {showHistory && (
+          <HistoryTape
+            theme={theme} scale={scale} history={history}
+            onClose={() => setShowHistory(false)}
+            onClear={() => setHistory([])}
+            onRecall={(v) => { setRecallValue(String(v)); setShowHistory(false); }}
+            feedback={fb}
+          />
+        )}
+        {showMemory && (
+          <MemoryManager
+            theme={theme} scale={scale} banks={memoryBanks} setBanks={setMemoryBanks}
+            onClose={() => setShowMemory(false)}
+            onRecall={(v) => { setRecallValue(String(v)); setShowMemory(false); }}
+            settings={settings} feedback={fb}
+          />
+        )}
+        {showSettings && (
+          <SettingsModal
+            theme={theme} scale={scale} settings={settings}
+            updateSettings={updateSettings}
+            onClose={() => setShowSettings(false)}
+            feedback={fb}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
-function IconBtn({ theme, children, onClick, badge, active, title }) {
+function IconBtn({ theme, scale, children, onClick, dot, title }) {
   return (
     <button
       onClick={onClick}
       title={title}
-      className={`relative w-8 h-8 rounded-lg flex items-center justify-center border transition-all active:scale-90
-        ${active ? `${theme.accentBg} text-white border-transparent` : `${theme.panelBg} ${theme.panelBorder} ${theme.statusBarText}`}`}
+      className={`relative flex items-center justify-center ${theme.statusBarText} active:scale-90 transition-transform`}
+      style={{ width: px(24), height: px(24) }}
     >
       {children}
-      {badge > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
-          {badge > 99 ? '99+' : badge}
-        </span>
+      {dot && (
+        <span
+          className={`absolute ${theme.accentBg}`}
+          style={{ top: px(-1), right: px(-1), width: px(7), height: px(7), borderRadius: px(7) }}
+        />
       )}
     </button>
   );
