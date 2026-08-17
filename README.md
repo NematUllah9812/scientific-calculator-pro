@@ -1,5 +1,7 @@
 # Scientific Calculator Pro
 
+**[▶ Try the live demo](https://nematullah9812.github.io/scientific-calculator-pro/)** &nbsp;·&nbsp; [Download the APK](ScientificCalculatorPro.apk?raw=1)
+
 A six-mode scientific calculator for Android. The interface is a React 19 app
 built to a single self-contained `index.html`, which a native WebView shell
 loads from its assets — one codebase, no runtime network dependency, and an
@@ -29,6 +31,7 @@ configurable precision and notation, sound profiles, and haptics.
 | --- | --- |
 | [`docs/MASTER_BLUEPRINT.md`](docs/MASTER_BLUEPRINT.md) | Original architectural specification — technology stack, file tree, Android build pipeline, math engines, theme tokens, cursor state machine |
 | [`docs/IMPLEMENTATION_NOTES.md`](docs/IMPLEMENTATION_NOTES.md) | How the shipped app differs from that spec, the redesign rules, and how it was verified |
+| [`docs/DEPLOY_GITHUB_PAGES.md`](docs/DEPLOY_GITHUB_PAGES.md) | How the live demo is published with GitHub Pages, and how to repeat it on another repo |
 | `docs/design-*.jpg` | The six reference screenshots the current UI was built against |
 
 The blueprint is the design as originally written; the implementation notes
