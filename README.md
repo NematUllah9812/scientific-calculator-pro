@@ -110,9 +110,9 @@ unaffected. Generate your own key — never reuse someone else's.
 
 ## Prebuilt APK
 
-`ScientificCalculatorPro.apk` is checked in for convenience.
+`ScientificCalculatorPro.apk` is checked in for convenience and reflects the
+current source, including the redesigned interface.
 
-> **Note:** this binary predates the UI redesign and still shows the older
-> interface. Build from source for the current design. It is signed with a
-> development key, so Android will warn about an unknown developer; enable
-> "install from unknown sources" to sideload it.
+Signed with v1 + v2 + v3 signature schemes using a development key, so
+Android will warn about an unknown developer — enable "install from unknown
+sources" to sideload it.
