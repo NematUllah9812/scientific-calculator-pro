@@ -23,6 +23,18 @@ configurable precision and notation, sound profiles, and haptics.
 
 ---
 
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [`docs/MASTER_BLUEPRINT.md`](docs/MASTER_BLUEPRINT.md) | Original architectural specification — technology stack, file tree, Android build pipeline, math engines, theme tokens, cursor state machine |
+| [`docs/IMPLEMENTATION_NOTES.md`](docs/IMPLEMENTATION_NOTES.md) | How the shipped app differs from that spec, the redesign rules, and how it was verified |
+| `docs/design-*.jpg` | The six reference screenshots the current UI was built against |
+
+The blueprint is the design as originally written; the implementation notes
+record where the build necessarily diverged (Gradle version, signing, layout
+scaling) and why. Read both before making structural changes.
+
 ## Architecture
 
 ```
@@ -54,6 +66,8 @@ instead of reflowing into a different arrangement.
 Scrolling is hybrid: keypad modes are locked to the viewport, while
 Statistics and Date/Time scroll only their content region with the header and
 tab strip pinned.
+
+Full rationale in [`docs/IMPLEMENTATION_NOTES.md`](docs/IMPLEMENTATION_NOTES.md).
 
 ---
 
