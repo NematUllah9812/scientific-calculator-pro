@@ -1,0 +1,125 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+button {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* ---- LCD cursor blink ---- */
+@keyframes lcd-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.lcd-cursor {
+  display: inline-block;
+  width: 2px;
+  margin: 0 -1px;
+  animation: lcd-blink 1.05s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+/* ---- LCD scanline / glass sheen ---- */
+.lcd-scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.06) 0px,
+    rgba(0, 0, 0, 0.06) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.5;
+}
+
+/* ---- Scrollbars ---- */
+.thin-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(120, 130, 150, 0.4);
+  border-radius: 99px;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ---- Modal animations ---- */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slide-up {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.anim-fade {
+  animation: fade-in 0.16s ease-out;
+}
+.anim-pop {
+  animation: slide-up 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.anim-sheet {
+  animation: sheet-up 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- Safe areas for notch devices ---- */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
