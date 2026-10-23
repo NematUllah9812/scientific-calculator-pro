@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify a signed APK: v1 JAR digests, alignment, dex integrity, payload."""
+"""Check APK payload integrity; apksigner separately verifies cryptographic signatures."""
 import base64
 import hashlib
 import struct
@@ -91,8 +91,9 @@ check('web asset carries the new logo geometry', len(logo_markers) == 5, str(log
 check('web asset loads the calculator bundle', b'root' in asset)
 
 # --- signing block ---------------------------------------------------------
-check('APK Signature Scheme v2/v3 block', b'APK Sig Block 42' in raw)
-check('v1 signature files', 'META-INF/CALCULAT.RSA' in names and 'META-INF/CALFULAT.SF' not in names)
+check('APK signing block present', b'APK Sig Block 42' in raw)
+check('v1 signature files present',
+      'META-INF/CALCULAT.RSA' in names and 'META-INF/CALCULAT.SF' in names)
 
 print('\nRESULT:', 'ALL CHECKS PASSED' if ok else 'PROBLEMS FOUND')
 sys.exit(0 if ok else 1)

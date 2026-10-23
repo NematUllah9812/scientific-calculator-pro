@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # ----------------------------- configuration --------------------------------
-ROOT="${ROOT:-/home/user}"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 WEB_DIR="$ROOT/calculator-app"
 STUDIO_DIR="$ROOT/AndroidStudioProject"
 APP_DIR="$STUDIO_DIR/app/src/main"
@@ -91,8 +91,8 @@ step 5 "AAPT2 linking resources -> unaligned.apk"
   --java "$WORK/gen" \
   --min-sdk-version 21 \
   --target-sdk-version 34 \
-  --version-code 30 \
-  --version-name "3.0" \
+  --version-code 31 \
+  --version-name "3.1" \
   --auto-add-overlay \
   "$WORK/compiled_res.zip"
 
@@ -155,7 +155,8 @@ step 13 "Archiving Android Studio project"
 rm -f "$ZIP_OUT"
 cd "$ROOT"
 zip -qr "$ZIP_OUT" AndroidStudioProject \
-  -x '*/build/*' '*/.gradle/*' '*.iml' '*/local.properties'
+  -x '*/build/*' '*/.gradle/*' '*.iml' '*/local.properties' \
+     '*.keystore' '*.jks' '*.p12' '*.pem' '*/keystore.properties'
 zip -qr "$ZIP_OUT" calculator-app \
   -x 'calculator-app/node_modules/*' 'calculator-app/dist/*' 'calculator-app/.vite/*'
 zip -q "$ZIP_OUT" README.md build-scientific-calculator-apk.sh 2>/dev/null || true

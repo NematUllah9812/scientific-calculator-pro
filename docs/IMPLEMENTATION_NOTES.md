@@ -255,3 +255,35 @@ keys — drawn in `currentColor` so the same SVG works everywhere.
 `shots/v17` (all six modes + the three sheets) and `shots/f6` (15 scripted
 checks) pass with no console errors. The synced Android WebView asset was
 re-checked from `file://`.
+
+## 8. Installable APK and updated live demo (2026-10-23)
+
+- Rebuilt `ScientificCalculatorPro.apk` as **3.1 / code 31**, minSdk 21,
+  targetSdk 34. The APK includes the new launcher icons and the current
+  357,107-byte single-file web UI.
+- The SDK-free pipeline (`build-apk-offline.sh`) uses cached aapt2, API 34
+  stubs, a Temurin runtime, a JS signer, and Android's `apksigner` verifier.
+  It reuses the shipped native WebView DEX, with a same-length background
+  colour patch and regenerated DEX checksums. It does **not** compile Java;
+  a native-source hash guard stops resource-only builds after Java changes.
+- Gradle metadata and the Java background colour now match the APK. The
+  regular full-SDK script resolves the repository path correctly, uses the
+  same version, and excludes private signing material from its source ZIP.
+- Tool downloads and private signing files remain under gitignored
+  `.apktools/`. The keystore must be backed up privately to sign future
+  updates; it is not part of the APK, source commit, or public release.
+- Android's `apksigner verify --verbose --print-certs` independently passes
+  **v1, v2 and v3** signatures. Payload checks also pass: signed-entry
+  digests, stored-resource alignment, DEX SHA-1/Adler-32, and the web bundle.
+- The packaged HTML was extracted from the APK and loaded via `file://`.
+  The new five-shape header logo renders; `78 × 9 + 6 = 708` works; no
+  browser console errors. No physical Android installation was available
+  for testing.
+- Re-running the SDK-free pipeline with the same key reproduces the exact
+  APK SHA-256 recorded in `ScientificCalculatorPro.apk.sha256`.
+- GitHub Pages reports the updated demo deployment as built. Its deployed
+  HTML matches the APK web asset. A local preview also binds to `0.0.0.0`.
+
+**Upgrade caveat:** the previous private signing key was unavailable. This
+sideload build therefore uses a new development key; Android may require
+uninstalling the old app first, which removes its stored settings/history.
