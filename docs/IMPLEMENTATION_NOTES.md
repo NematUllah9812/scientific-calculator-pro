@@ -214,3 +214,44 @@ corrected in the middle instead of being retyped.
 - The Date calendar did not wrap from December to January.
 - `color-scheme` was hard-coded to dark, so native inputs and scrollbars kept
   the dark palette in the Daylight theme.
+
+## 7. Logo and scientific input fixes (v3.2)
+
+### New logo
+
+The generic clipboard icon in the header and the busy Casio drawing used as
+the launcher icon are gone. The app now has its own mark: a calculator
+reduced to **five shapes** — a display slot above a 2 × 2 grid of rounded
+keys — drawn in `currentColor` so the same SVG works everywhere.
+
+- `src/components/AppLogo.jsx` holds the mark (one `<svg>`, five `<rect>`s).
+- The header shows it knocked out of the theme accent badge, so it recolours
+  with the active theme.
+- The Android launcher icons (`mipmap-*dpi/ic_launcher.png` and
+  `ic_launcher_round.png`, 48 → 192 px) use the same mark in orange
+  (`#FF9F0A`) on a near-black gradient badge (`#242426 → #101012 → #000`),
+  squircle radius 22.5 %, circular for the round variant.
+- `res/values/colors.xml` now uses a true black background (`#000000`) and
+  the same orange accent, so the splash/status bars match the icon.
+
+### Scientific mode: function keys
+
+- **A function key now applies to the number in front of the caret.**
+  Typing `144` and pressing `√x` produces `sqrt(144)` and the live preview
+  shows `12`. Before, the function name was appended to the number
+  (`144sqrt(`) and `=` reported *Error*.
+- **Brackets are closed for the user.** `√x`, `log`, `ln`, `sin`, `mod`,
+  `nCr`, `floor` … insert the matching `)` immediately and leave the caret
+  inside the call, so the expression always reads as a complete function.
+  The `)` key walks over a bracket that is already there instead of
+  doubling it, and `=` closes anything the user left open.
+- **Backspace removes a function and its bracket as one unit** — deleting
+  `sqrt(` no longer leaves a stray `)` behind.
+- The `(` / `)` keys, the caret arrows and the delete key now carry
+  accessible names (`aria-label`), which the icon-only keys were missing.
+
+### Verification
+
+`shots/v17` (all six modes + the three sheets) and `shots/f6` (15 scripted
+checks) pass with no console errors. The synced Android WebView asset was
+re-checked from `file://`.

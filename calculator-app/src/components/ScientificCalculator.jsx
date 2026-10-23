@@ -48,9 +48,54 @@ export default function ScientificCalculator({
         else { base = ''; pos = 0; }
         setIsEvaluated(false);
       }
-      const next = base.slice(0, pos) + token + base.slice(pos);
+      /* A function key such as √x or log inserts an opening bracket, so the
+         matching closing bracket is added right away and the caret is left
+         inside it — the expression always reads as a complete call. */
+      const opens = token.endsWith('(') && !opts.noAutoClose;
+      const next = base.slice(0, pos) + token + (opens ? ')' : '') + base.slice(pos);
       setExpr(next);
       setCursor(pos + token.length + (opts.cursorOffset || 0));
+    },
+    [expr, cursor, isEvaluated, result, fmt]
+  );
+
+  /* A function key (√x, log, sin…) applies to the number sitting in front of
+     the caret: "144" then "√x" becomes "sqrt(144)" instead of the broken
+     "144sqrt(".  With no number in front it opens a call and leaves the
+     caret inside the brackets, ready for the argument. */
+  const pressFunction = useCallback(
+    (token) => {
+      setError(''); setShowFraction(false);
+      const wrap = (base, pos, after) => {
+        const before = base.slice(0, pos);
+        const m = before.match(/(\d+\.?\d*)$/);
+        let next, caret;
+        if (m) {
+          const num = m[1];
+          const head = before.slice(0, before.length - num.length);
+          next = head + token + num + ')' + after;
+          caret = head.length + token.length + num.length + 1;
+        } else if (before.endsWith('(')) {
+          /* already inside a bracket — reuse it instead of nesting */
+          const name = token.slice(0, -1);
+          next = before.slice(0, before.length - 1) + name + ')' + after;
+          caret = before.length - 1 + name.length + 1;
+        } else {
+          next = before + token + ')' + after;
+          caret = pos + token.length;
+        }
+        setExpr(next);
+        setCursor(caret);
+      };
+
+      if (isEvaluated) {
+        const continues = ['mod(', 'root(', 'nCr(', 'nPr(', 'atan2('].includes(token);
+        const base = continues ? plain(fmt(result ?? 0)) : '';
+        setIsEvaluated(false);
+        wrap(base, base.length, '');
+        return;
+      }
+      wrap(expr, cursor, expr.slice(cursor));
     },
     [expr, cursor, isEvaluated, result, fmt]
   );
@@ -73,7 +118,8 @@ export default function ScientificCalculator({
 
   const press = (token, variant = 'key', opts) => {
     feedback(variant);
-    insert(token, opts);
+    if (token.endsWith('(') && !opts?.noAutoClose) pressFunction(token);
+    else insert(token, opts);
     if (opts?.consumeShift !== false && shift) setShift(false);
   };
 
@@ -83,9 +129,17 @@ export default function ScientificCalculator({
     if (cursor === 0) return;
     const before = expr.slice(0, cursor);
     const m = before.match(/(asinh|acosh|atanh|sinh|cosh|tanh|asin|acos|atan|sqrt|cbrt|log2|log10|log|ln|exp|abs|floor|ceil|round|nCr|nPr|mod|root|inv|rand)\($/);
-    const cut = m ? m[0].length : 1;
-    setExpr(expr.slice(0, cursor - cut) + expr.slice(cursor));
-    setCursor(cursor - cut);
+    if (m) {
+      /* deleting a function removes its bracket pair as one unit */
+      const cut = m[0].length;
+      const after = expr.slice(cursor);
+      const drop = after.startsWith(')') ? 1 : 0;
+      setExpr(before.slice(0, cursor - cut) + after.slice(drop));
+      setCursor(cursor - cut);
+      return;
+    }
+    setExpr(expr.slice(0, cursor - 1) + expr.slice(cursor));
+    setCursor(cursor - 1);
   };
 
   /* CE clears the number you are currently typing, not the whole sum. */
@@ -119,6 +173,15 @@ export default function ScientificCalculator({
     setIsEvaluated(false); setError(''); setShowFraction(false);
   };
 
+  /* ")" walks over a closing bracket that is already there instead of
+     doubling it, so a function call can be closed with one tap. */
+  const closeParen = () => {
+    feedback('key'); setError('');
+    if (isEvaluated) { setIsEvaluated(false); setExpr(''); setCursor(0); return; }
+    if (expr[cursor] === ')') { setCursor(cursor + 1); return; }
+    insert(')');
+  };
+
   /* ---------- caret editing: go back and change what you typed ---------- */
   const moveCaret = (delta) => {
     feedback('key');
@@ -149,11 +212,13 @@ export default function ScientificCalculator({
   const compute = () => {
     if (!expr.trim()) return;
     feedback('equals');
+    /* any bracket the user left open is closed for the evaluation */
+    const closed = expr + ')'.repeat(bracketBalance(expr));
     try {
-      const v = evaluate(expr, { angleMode, ans });
+      const v = evaluate(closed, { angleMode, ans });
       setResult(v); setAns(v); setIsEvaluated(true); setError('');
-      setCursor(expr.length);
-      addHistory({ expression: expr, result: fmt(v), mode: 'Scientific' });
+      setCursor(closed.length);
+      addHistory({ expression: closed, result: fmt(v), mode: 'Scientific' });
     } catch (e) {
       feedback('error'); setError(e.message || 'Math Error'); setResult(null);
     }
@@ -217,10 +282,11 @@ export default function ScientificCalculator({
   const trigAlt = (b) => { const h = hyp ? b + 'h' : b; return shift ? h : `${h}⁻¹`; };
 
   /* ---- Keycap: frosted glass pane, tap ripple, press feedback ---- */
-  const K = ({ label, alt, onClick, cls, fs = 15, accent }) => (
+  const K = ({ label, alt, onClick, cls, fs = 15, accent, aria }) => (
     <button
       onClick={onClick}
       onPointerDown={ripple}
+      aria-label={aria}
       className={`${KEY_BASE} ${cls}`}
       style={{ borderRadius: px(15) }}
     >
@@ -328,6 +394,7 @@ export default function ScientificCalculator({
 
             <div
               onPointerDown={placeCaret}
+              data-testid="scientific-formula"
               className="flex-1 min-w-0 text-right cursor-text break-words"
               style={{ minHeight: px(exprSize * 1.4) }}
             >
@@ -377,6 +444,7 @@ export default function ScientificCalculator({
           <div className="flex items-end justify-end" style={{ marginTop: px(2) }}>
             <button
               onClick={() => { if (fractionText) { feedback('toggle'); setShowFraction((s) => !s); } }}
+              data-testid="scientific-result"
               className={`font-semibold tabular-nums truncate text-right ${error ? 'text-rose-500' : theme.lcdResult}`}
               style={{ fontSize: px(rSize), lineHeight: 1.05, maxWidth: '100%', letterSpacing: px(-0.8) }}
             >
@@ -435,9 +503,9 @@ export default function ScientificCalculator({
         {/* Row 4 */}
         <K label="AC" cls={theme.clearKey} fs={14} onClick={clearAll} />
         <K label="CE" cls={theme.ceKey} fs={14} onClick={clearEntry} />
-        <K label={<Delete size={ico(scale, 18)} />} cls={theme.ceKey} onClick={backspace} />
+        <K label={<Delete size={ico(scale, 18)} />} aria="Delete" cls={theme.ceKey} onClick={backspace} />
         <K label="(" cls={theme.ceKey} fs={17} onClick={() => press('(')} />
-        <K label=")" cls={theme.ceKey} fs={17} onClick={() => press(')')} />
+        <K label=")" cls={theme.ceKey} fs={17} onClick={closeParen} />
 
         {/* Row 5 */}
         <K label="7" cls={theme.numKey} fs={20} onClick={() => press('7')} />

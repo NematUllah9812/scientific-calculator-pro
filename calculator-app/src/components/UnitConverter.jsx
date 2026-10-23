@@ -125,10 +125,11 @@ export default function UnitConverter({
     });
   };
 
-  const K = ({ label, cls, onClick, fs = 19 }) => (
+  const K = ({ label, cls, onClick, fs = 19, aria }) => (
     <button
       onClick={onClick}
       onPointerDown={ripple}
+      aria-label={aria}
       className={`${KEY_BASE} ${cls}`}
       style={{ borderRadius: px(16), fontSize: px(fs) }}
     >
@@ -252,7 +253,7 @@ export default function UnitConverter({
         <K label="7" cls={theme.numKey} onClick={() => digit('7')} />
         <K label="8" cls={theme.numKey} onClick={() => digit('8')} />
         <K label="9" cls={theme.numKey} onClick={() => digit('9')} />
-        <K label={<Delete size={ico(scale, 17)} />} cls={theme.funcKey} onClick={backspace} />
+        <K label={<Delete size={ico(scale, 17)} />} aria="Delete" cls={theme.funcKey} onClick={backspace} />
 
         <K label="4" cls={theme.numKey} onClick={() => digit('4')} />
         <K label="5" cls={theme.numKey} onClick={() => digit('5')} />

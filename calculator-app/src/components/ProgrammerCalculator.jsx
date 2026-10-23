@@ -124,10 +124,11 @@ export default function ProgrammerCalculator({ theme, addHistory, feedback, scal
   const bin = toBinaryString(current, bits);
 
   /* ---- keycap ---- */
-  const K = ({ label, cls, onClick, fs = 14, disabled, style }) => (
+  const K = ({ label, cls, onClick, fs = 14, disabled, style, aria }) => (
     <button
       onClick={onClick}
       onPointerDown={ripple}
+      aria-label={aria}
       disabled={disabled}
       className={`${KEY_BASE} ${cls} ${disabled ? 'opacity-25' : ''}`}
       style={{ borderRadius: px(13), fontSize: px(fs), ...style }}
@@ -324,7 +325,7 @@ export default function ProgrammerCalculator({ theme, addHistory, feedback, scal
         <K label="9" cls={theme.numKey} fs={16} disabled={!isDigitAllowed('9', radix)} onClick={() => pressDigit('9')} />
         <K label="+" cls={theme.opKey} fs={16} onClick={() => pressOp('+')} />
         <K label="−" cls={theme.opKey} fs={16} onClick={() => pressOp('-')} />
-        <K label={<Delete size={ico(scale, 15)} />} cls={theme.funcKey} onClick={backspace} />
+        <K label={<Delete size={ico(scale, 15)} />} aria="Delete" cls={theme.funcKey} onClick={backspace} />
 
         {/* 4 5 6 × ÷ MOD */}
         <K label="4" cls={theme.numKey} fs={16} disabled={!isDigitAllowed('4', radix)} onClick={() => pressDigit('4')} />

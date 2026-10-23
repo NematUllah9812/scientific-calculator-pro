@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Hash, FlaskConical, Binary, BarChart3, Scale, CalendarDays,
-  Settings as SettingsIcon, History, Database, Calculator,
+  Settings as SettingsIcon, History, Database,
 } from 'lucide-react';
 
+import AppLogo from './components/AppLogo.jsx';
 import SimpleCalculator from './components/SimpleCalculator.jsx';
 import ScientificCalculator from './components/ScientificCalculator.jsx';
 import ProgrammerCalculator from './components/ProgrammerCalculator.jsx';
@@ -168,7 +169,7 @@ export default function App() {
                 className={`${theme.accentBg} flex items-center justify-center shrink-0`}
                 style={{ width: px(26), height: px(26), borderRadius: px(8) }}
               >
-                <Calculator size={ico(scale, 15)} className={theme.accentText} strokeWidth={2.4} />
+                <AppLogo size={ico(scale, 17)} className={theme.accentText} />
               </div>
               <div
                 className="font-semibold truncate"
