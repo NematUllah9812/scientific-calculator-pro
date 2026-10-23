@@ -1,6 +1,6 @@
 # Scientific Calculator Pro
 
-**[▶ Try the live demo](https://nematullah9812.github.io/scientific-calculator-pro/)** &nbsp;·&nbsp; [Download APK v3.1](https://github.com/NematUllah9812/scientific-calculator-pro/blob/v3.1/ScientificCalculatorPro.apk?raw=true)
+**[▶ Try the live demo](https://nematullah9812.github.io/scientific-calculator-pro/)** &nbsp;·&nbsp; [Download APK v3.1.1](ScientificCalculatorPro.apk?raw=true)
 
 A six-mode scientific calculator for Android. The interface is a React 19 app
 built to a single self-contained `index.html`, which a native WebView shell
@@ -13,7 +13,7 @@ APK that stays under 200 KB.
 
 | Mode | What it does |
 | --- | --- |
-| **Simple** | Four-function keypad, editable expression with a movable caret, percent, sign toggle, paper tape of recent results |
+| **Simple** | Four-function keypad, editable expression with a movable caret, percent, single-character backspace, paper tape of recent results |
 | **Scientific** | SHIFT function swap, DEG/RAD/GRAD, 6 memory banks, factorial, nCr/nPr, logs, powers, roots |
 | **Programmer** | HEX/DEC/OCT/BIN readout, BigInt ALU, bitwise ops, shifts/rotates, interactive 64-bit bitboard, BYTE→QWORD word sizes, signed/unsigned |
 | **Statistics** | 18 summary metrics, OLS linear regression with prediction, combinatorics, random generators, dataset presets |
@@ -104,7 +104,7 @@ echo "sdk.dir=/path/to/android-sdk" > local.properties
 ./gradlew assembleRelease
 ```
 
-`minSdk 21` / `targetSdk 34`, version **3.1** (code **31**).
+`minSdk 21` / `targetSdk 34`, version **3.1.1** (code **32**).
 
 ### SDK-free APK rebuild (Linux x86_64)
 
@@ -152,13 +152,13 @@ unaffected. Generate your own key — never reuse someone else's.
 
 ## Prebuilt APK
 
-[Download v3.1](https://github.com/NematUllah9812/scientific-calculator-pro/blob/v3.1/ScientificCalculatorPro.apk?raw=true)
-(**181,662 bytes**, Android 5.0/API 21 minimum, with an up-to-date Android
+[Download v3.1.1](ScientificCalculatorPro.apk?raw=true)
+(**181,610 bytes**, Android 5.0/API 21 minimum, with an up-to-date Android
 System WebView). The checked-in APK includes the redesigned UI, the new
-launcher logo and the scientific-input fixes.
+launcher logo, scientific-input fixes and the Simple backspace key.
 
 - Verified with Android's `apksigner`: **v1, v2 and v3 signatures pass**.
-- SHA-256: `47b584c8a6dc5eefa482bab6c784d58b98e4e122690bc9cb5d1af26905e5e9ea`
+- SHA-256: `b5af10660d8528e0f3727ac8bfee63d36f08edc4308b23f6b10f8a9744daa623`
 - The packaged `assets/index.html` was extracted and browser-tested from
   `file://`, including a calculation; no console errors. A physical Android
   device installation has not been tested here.
@@ -169,4 +169,5 @@ If an older build is installed, Android may require uninstalling it first;
 that removes its saved settings and history.
 
 [Live browser demo](https://nematullah9812.github.io/scientific-calculator-pro/)
-— GitHub Pages serves the same web bundle.
+— reflects the latest published deployment, not unmerged branch changes.
+Use `npm run dev` in `calculator-app/` to preview the current source.
