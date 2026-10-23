@@ -37,10 +37,21 @@ function currentViewport() {
   };
 }
 
+/** Publish the scale to CSS. Called synchronously on boot so the very
+ *  first paint already uses the right unit (no flash of unstyled size). */
+export function applyScale(u) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.style.setProperty('--u', `${u}px`);
+  root.style.setProperty('--app-w', `${Math.min(currentViewport().w, DESIGN_W * u)}px`);
+}
+
 export function useScale() {
   const [scale, setScale] = useState(() => {
     const { w, h } = currentViewport();
-    return computeScale(w, h);
+    const u = computeScale(w, h);
+    applyScale(u);
+    return u;
   });
 
   useEffect(() => {
@@ -50,8 +61,7 @@ export function useScale() {
       frame = requestAnimationFrame(() => {
         const { w, h } = currentViewport();
         const u = computeScale(w, h);
-        document.documentElement.style.setProperty('--u', `${u}px`);
-        document.documentElement.style.setProperty('--app-w', `${Math.min(w, DESIGN_W * u)}px`);
+        applyScale(u);
         setScale(u);
       });
     };
@@ -75,6 +85,9 @@ export function useScale() {
 
 /** Design-pixel length for inline styles: px(14) -> 'calc(14 * var(--u))' */
 export const px = (n) => `calc(${n} * var(--u))`;
+
+/** Hairline border width that never disappears on small screens. */
+export const hair = () => 'max(1px, calc(1 * var(--u)))';
 
 /** Icon pixel size for lucide (needs a real number). */
 export const ico = (scale, n) => Math.max(8, Math.round(n * scale));

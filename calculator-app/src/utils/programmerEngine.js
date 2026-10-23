@@ -170,10 +170,11 @@ export function alu(op, a, b, bits) {
       return wrap(A * B, bits);
     case '/':
       if (B === 0n) throw new Error('Division by zero');
-      return wrap(toSigned(A, bits) / toSigned(B, bits), bits);
+      return wrap(divSigned(A, B, bits), bits);
     case '%':
+    case 'MOD':
       if (B === 0n) throw new Error('Modulo by zero');
-      return wrap(toSigned(A, bits) % toSigned(B, bits), bits);
+      return wrap(modSigned(A, B, bits), bits);
     case 'AND':
       return bitAnd(A, B, bits);
     case 'OR':
@@ -186,12 +187,15 @@ export function alu(op, a, b, bits) {
       return bitNor(A, B, bits);
     case 'XNOR':
       return bitXnor(A, B, bits);
+    case 'SHL':
     case '<<':
       return shl(A, B, bits);
-    case '>>':
-      return sar(A, B, bits);
+    case 'SHR':
     case '>>>':
       return shr(A, B, bits);
+    case 'SAR':
+    case '>>':
+      return sar(A, B, bits);
     case 'ROL':
       return rol(A, B, bits);
     case 'ROR':
@@ -199,6 +203,25 @@ export function alu(op, a, b, bits) {
     default:
       return B;
   }
+}
+
+/**
+ * Division follows the usual two's-complement convention: as soon as
+ * either operand has its sign bit set the pair is treated as signed,
+ * otherwise the raw unsigned words are divided.
+ */
+function divSigned(A, B, bits) {
+  const sa = toSigned(A, bits);
+  const sb = toSigned(B, bits);
+  if (sa < 0n || sb < 0n) return sa / sb;
+  return A / B;
+}
+
+function modSigned(A, B, bits) {
+  const sa = toSigned(A, bits);
+  const sb = toSigned(B, bits);
+  if (sa < 0n || sb < 0n) return sa % sb;
+  return A % B;
 }
 
 /* ---------------------- Bit utilities ---------------------- */

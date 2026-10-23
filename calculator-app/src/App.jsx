@@ -40,14 +40,24 @@ const DEFAULT_SETTINGS = {
   angleMode: 'DEG',
 };
 
+/** Older builds stored short notation ids ('sci' / 'eng') that the
+ *  formatter does not understand — migrate them on load. */
+function migrateSettings(raw) {
+  const s = { ...DEFAULT_SETTINGS, ...(raw || {}) };
+  if (s.notation === 'sci') s.notation = 'scientific';
+  else if (s.notation === 'eng') s.notation = 'engineering';
+  if (!['standard', 'scientific', 'engineering'].includes(s.notation)) s.notation = 'standard';
+  if (!['DEG', 'RAD', 'GRAD'].includes(s.angleMode)) s.angleMode = 'DEG';
+  if (!Number.isFinite(Number(s.precision))) s.precision = DEFAULT_SETTINGS.precision;
+  s.precision = Math.max(2, Math.min(14, Number(s.precision)));
+  return s;
+}
+
 export default function App() {
   const scale = useScale();
 
   const [mode, setMode] = useState(() => load(STORAGE_KEYS.lastMode, 'simple'));
-  const [settings, setSettings] = useState(() => ({
-    ...DEFAULT_SETTINGS,
-    ...load(STORAGE_KEYS.settings, {}),
-  }));
+  const [settings, setSettings] = useState(() => migrateSettings(load(STORAGE_KEYS.settings, {})));
   const [history, setHistory] = useState(() => load(STORAGE_KEYS.history, []));
   const [memoryBanks, setMemoryBanks] = useState(() =>
     load(STORAGE_KEYS.memory, { M: 0, M1: 0, M2: 0, M3: 0, M4: 0, M5: 0 })
@@ -58,9 +68,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [recallValue, setRecallValue] = useState(null);
 
-  const tabStripRef = useRef(null);
   const tabRefs = useRef({});
-  const [tabScroll, setTabScroll] = useState({ frac: 0, ratio: 1 });
 
   const theme = useMemo(() => getTheme(settings.theme), [settings.theme]);
 
@@ -69,6 +77,11 @@ export default function App() {
   useEffect(() => save(STORAGE_KEYS.memory, memoryBanks), [memoryBanks]);
   useEffect(() => save(STORAGE_KEYS.lastMode, mode), [mode]);
 
+  /* Native form controls and scrollbars must follow the theme. */
+  useEffect(() => {
+    document.documentElement.style.colorScheme = theme.lcdIsLight ? 'light' : 'dark';
+  }, [theme.lcdIsLight]);
+
   /* Keep the active tab visible in the scrolling strip. */
   useEffect(() => {
     const el = tabRefs.current[mode];
@@ -76,24 +89,6 @@ export default function App() {
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }, [mode]);
-
-  /* Track horizontal scroll of the tab strip to drive the progress bar. */
-  useEffect(() => {
-    const strip = tabStripRef.current;
-    if (!strip) return;
-    const update = () => {
-      const max = strip.scrollWidth - strip.clientWidth;
-      setTabScroll({
-        frac: max > 0 ? strip.scrollLeft / max : 0,
-        ratio: strip.scrollWidth > 0 ? strip.clientWidth / strip.scrollWidth : 1,
-      });
-    };
-    update();
-    strip.addEventListener('scroll', update, { passive: true });
-    const ro = new ResizeObserver(update);
-    ro.observe(strip);
-    return () => { strip.removeEventListener('scroll', update); ro.disconnect(); };
-  }, []);
 
   useEffect(() => {
     const unlock = () => {
@@ -117,6 +112,7 @@ export default function App() {
   const fb = useCallback((variant = 'key') => feedback(settings, variant), [settings]);
 
   const handleTab = (id) => {
+    if (id === mode) return;
     fb('toggle');
     setMode(id);
   };
@@ -137,83 +133,79 @@ export default function App() {
     scale,
   };
 
-  const renderMode = () => {
-    switch (mode) {
-      case 'simple': return <SimpleCalculator {...shared} />;
-      case 'scientific': return <ScientificCalculator {...shared} />;
-      case 'programmer': return <ProgrammerCalculator {...shared} />;
-      case 'statistics': return <StatisticsCalculator {...shared} />;
-      case 'converter': return <UnitConverter {...shared} />;
-      case 'date': return <DateCalculator {...shared} />;
-      default: return <ScientificCalculator {...shared} />;
+  const renderMode = (id) => {
+    switch (id) {
+      case 'simple': return <SimpleCalculator {...shared} active={mode === id} />;
+      case 'scientific': return <ScientificCalculator {...shared} active={mode === id} />;
+      case 'programmer': return <ProgrammerCalculator {...shared} active={mode === id} />;
+      case 'statistics': return <StatisticsCalculator {...shared} active={mode === id} />;
+      case 'converter': return <UnitConverter {...shared} active={mode === id} />;
+      case 'date': return <DateCalculator {...shared} active={mode === id} />;
+      default: return null;
     }
   };
 
   return (
-    <div className={`w-full h-full flex justify-center ${theme.appBg}`}>
+    <div className={`w-full h-full flex items-center justify-center ${theme.appBg}`}>
       {/* Fixed-aspect app canvas: 412 x 929 design units scaled by --u */}
       <div
         className={`relative flex flex-col overflow-hidden ${theme.appBg} ${theme.bodyText}`}
-        style={{ width: px(DESIGN_W), height: '100%', maxHeight: px(DESIGN_H) }}
+        style={{
+          width: px(DESIGN_W),
+          height: px(DESIGN_H),
+          maxWidth: '100%',
+          maxHeight: '100%',
+        }}
       >
         {/* ================= Header ================= */}
-        <header className={`shrink-0 ${theme.headerBg}`} style={{ paddingTop: 'env(safe-area-inset-top,0px)' }}>
+        <header className={`shrink-0 ${theme.headerBg}`}>
           <div
             className="flex items-center justify-between"
-            style={{ height: px(52), paddingLeft: px(12), paddingRight: px(12) }}
+            style={{ height: px(46), paddingLeft: px(16), paddingRight: px(12) }}
           >
             <div className="flex items-center min-w-0" style={{ gap: px(9) }}>
               <div
                 className={`${theme.accentBg} flex items-center justify-center shrink-0`}
-                style={{ width: px(30), height: px(30), borderRadius: px(9) }}
+                style={{ width: px(26), height: px(26), borderRadius: px(8) }}
               >
-                <Calculator size={ico(scale, 17)} className="text-white" strokeWidth={2.2} />
+                <Calculator size={ico(scale, 15)} className={theme.accentText} strokeWidth={2.4} />
               </div>
-              <div className="min-w-0 leading-none">
-                <div
-                  className="font-extrabold tracking-tight truncate"
-                  style={{ fontSize: px(13.5), letterSpacing: px(0.2) }}
-                >
-                  SCIENTIFIC PRO
-                </div>
-                <div
-                  className={`${theme.accent} font-bold uppercase truncate`}
-                  style={{ fontSize: px(8.5), marginTop: px(2.5), letterSpacing: px(0.6) }}
-                >
-                  {theme.name}
-                </div>
+              <div
+                className="font-semibold truncate"
+                style={{ fontSize: px(15), letterSpacing: px(-0.1) }}
+              >
+                Calculator
               </div>
             </div>
 
-            <div className="flex items-center shrink-0" style={{ gap: px(14) }}>
+            <div className="flex items-center shrink-0" style={{ gap: px(2) }}>
               <IconBtn
                 theme={theme} scale={scale} title="History"
                 onClick={() => { fb('toggle'); setShowHistory(true); }}
                 dot={history.length > 0}
               >
-                <History size={ico(scale, 19)} />
+                <History size={ico(scale, 18)} />
               </IconBtn>
               <IconBtn
                 theme={theme} scale={scale} title="Memory"
                 onClick={() => { fb('toggle'); setShowMemory(true); }}
                 dot={memoryActive}
               >
-                <Database size={ico(scale, 19)} />
+                <Database size={ico(scale, 18)} />
               </IconBtn>
               <IconBtn
                 theme={theme} scale={scale} title="Settings"
                 onClick={() => { fb('toggle'); setShowSettings(true); }}
               >
-                <SettingsIcon size={ico(scale, 19)} />
+                <SettingsIcon size={ico(scale, 18)} />
               </IconBtn>
             </div>
           </div>
 
-          {/* ================= Mode tabs ================= */}
+          {/* ================= Mode strip ================= */}
           <div
-            ref={tabStripRef}
-            className="flex overflow-x-auto no-scrollbar"
-            style={{ gap: px(6), paddingLeft: px(8), paddingRight: px(8), paddingBottom: px(7) }}
+            className="flex overflow-x-auto no-scrollbar edge-fade"
+            style={{ gap: px(5), paddingLeft: px(14), paddingRight: px(14), paddingBottom: px(10) }}
           >
             {MODES.map(({ id, label, Icon }) => {
               const active = mode === id;
@@ -222,44 +214,37 @@ export default function App() {
                   key={id}
                   ref={(el) => { tabRefs.current[id] = el; }}
                   onClick={() => handleTab(id)}
+                  aria-current={active ? 'page' : undefined}
                   className={`shrink-0 flex items-center ${active ? theme.tabActive : theme.tabInactive}`}
                   style={{
-                    gap: px(6),
-                    height: px(34),
-                    paddingLeft: px(13),
-                    paddingRight: px(13),
-                    borderRadius: px(10),
-                    fontSize: px(13),
-                    fontWeight: active ? 700 : 600,
+                    gap: px(5),
+                    height: px(32),
+                    paddingLeft: px(11),
+                    paddingRight: px(11),
+                    borderRadius: px(16),
+                    fontSize: px(12.5),
+                    fontWeight: active ? 650 : 550,
+                    transition: 'background-color 140ms ease, color 140ms ease, transform 100ms ease',
                   }}
                 >
-                  <Icon size={ico(scale, 14)} strokeWidth={active ? 2.6 : 2} />
+                  <Icon size={ico(scale, 13)} strokeWidth={active ? 2.5 : 2} />
                   {label}
                 </button>
               );
             })}
           </div>
-
-          {/* Scroll-position indicator for the tab strip */}
-          <div
-            className="relative overflow-hidden"
-            style={{ height: px(1.5), marginLeft: px(90), marginRight: px(90), opacity: 0.75 }}
-          >
-            <div className="absolute inset-0 bg-white/8" style={{ borderRadius: px(2) }} />
-            <div
-              className={`absolute top-0 bottom-0 ${theme.accentBg}`}
-              style={{
-                width: `${Math.max(14, tabScroll.ratio * 100)}%`,
-                left: `${tabScroll.frac * (100 - Math.max(14, tabScroll.ratio * 100))}%`,
-                borderRadius: px(2),
-                transition: 'left 90ms linear',
-              }}
-            />
-          </div>
         </header>
 
-        {/* ================= Active mode ================= */}
-        <main className="flex-1 min-h-0 overflow-hidden">{renderMode()}</main>
+        {/* ================= Active mode =================
+            Every mode stays mounted (hidden with display:none) so that
+            switching tabs never throws away what you were typing. */}
+        <main className="flex-1 min-h-0 overflow-hidden">
+          {MODES.map(({ id }) => (
+            <div key={id} className="h-full" style={{ display: mode === id ? 'block' : 'none' }}>
+              {renderMode(id)}
+            </div>
+          ))}
+        </main>
 
         {/* ================= Modals ================= */}
         {showHistory && (
@@ -297,14 +282,16 @@ function IconBtn({ theme, scale, children, onClick, dot, title }) {
     <button
       onClick={onClick}
       title={title}
-      className={`relative flex items-center justify-center ${theme.statusBarText} active:scale-90 transition-transform`}
-      style={{ width: px(24), height: px(24) }}
+      aria-label={title}
+      className={`relative flex items-center justify-center ${theme.statusBarText} rounded-full
+        transition-transform active:scale-90`}
+      style={{ width: px(32), height: px(32) }}
     >
       {children}
       {dot && (
         <span
           className={`absolute ${theme.accentBg}`}
-          style={{ top: px(-1), right: px(-1), width: px(7), height: px(7), borderRadius: px(7) }}
+          style={{ top: px(5), right: px(5), width: px(6), height: px(6), borderRadius: px(6) }}
         />
       )}
     </button>

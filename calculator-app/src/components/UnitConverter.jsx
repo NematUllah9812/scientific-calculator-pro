@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeftRight, ChevronRight, Copy, Check, Delete } from 'lucide-react';
+import { ArrowLeftRight, ChevronDown, Copy, Check, Delete } from 'lucide-react';
 import {
   UNIT_CATEGORIES, convert, getUnitList, CATEGORY_LIST, DEFAULT_UNITS,
 } from '../utils/unitConverterData.js';
 import { formatResult } from '../utils/mathEngine.js';
 import { KEY_BASE } from '../utils/themeStyles.js';
+import { ripple } from '../utils/ripple.js';
 import { px, ico } from '../utils/scale.js';
 
 export default function UnitConverter({
-  theme, settings, addHistory, feedback, recallValue, clearRecall, scale,
+  theme, settings, addHistory, history, feedback, recallValue, clearRecall, scale,
 }) {
   const [catId, setCatId] = useState('length');
   const [from, setFrom] = useState(DEFAULT_UNITS.length?.[0] || 'm');
@@ -21,7 +22,8 @@ export default function UnitConverter({
 
   useEffect(() => {
     if (recallValue !== null && recallValue !== undefined) {
-      setEntry(String(recallValue)); clearRecall();
+      setEntry(String(recallValue).replace(/,/g, ''));
+      clearRecall();
     }
   }, [recallValue, clearRecall]);
 
@@ -62,15 +64,35 @@ export default function UnitConverter({
 
   const digit = (d) => {
     feedback('key');
-    if (d === '.' && entry.includes('.')) return;
-    if (entry === '0' && d !== '.') { setEntry(d); return; }
-    if (entry.replace(/[-.]/g, '').length >= 14) return;
-    setEntry(entry + d);
+    setEntry((e) => {
+      if (d === '.' && e.includes('.')) return e;
+      if (e === '0' && d !== '.') return d;
+      if (e.replace(/[-.]/g, '').length >= 14) return e;
+      return e + d;
+    });
   };
 
   const backspace = () => {
     feedback('key');
     setEntry((e) => (e.length > 1 ? e.slice(0, -1) : '0'));
+  };
+
+  /* "00" appends two zeroes in one go (calling digit() twice used to
+     lose one of them because both calls saw the same stale state). */
+  const appendZeros = () => {
+    feedback('key');
+    setEntry((e) => {
+      if (e.replace(/[-.]/g, '').length >= 13) return e;
+      return e === '0' ? '00' : e + '00';
+    });
+  };
+
+  const toggleSign = () => {
+    feedback('key');
+    setEntry((e) => {
+      if (e.startsWith('-')) return e.slice(1);
+      return e === '0' ? '0' : '-' + e;
+    });
   };
 
   const swap = () => { feedback('toggle'); setFrom(to); setTo(from); };
@@ -95,7 +117,12 @@ export default function UnitConverter({
   };
 
   const K = ({ label, cls, onClick, fs = 19 }) => (
-    <button onClick={onClick} className={`${KEY_BASE} ${cls}`} style={{ borderRadius: px(10), fontSize: px(fs) }}>
+    <button
+      onClick={onClick}
+      onPointerDown={ripple}
+      className={`${KEY_BASE} ${cls}`}
+      style={{ borderRadius: px(16), fontSize: px(fs) }}
+    >
       {label}
     </button>
   );
@@ -103,140 +130,180 @@ export default function UnitConverter({
   const Selector = ({ side, unitKey }) => (
     <button
       onClick={() => { feedback('toggle'); setPicker(picker === side ? null : side); }}
-      className={`flex items-center justify-between ${theme.lcdInset}`}
+      className={`flex items-center ${theme.chipBg} ${theme.chipText} max-w-full`}
       style={{
-        borderRadius: px(9),
-        padding: `${px(8)} ${px(11)}`, gap: px(8), minWidth: px(168), maxWidth: px(210),
+        borderRadius: px(10),
+        padding: `${px(7)} ${px(9)} ${px(7)} ${px(11)}`,
+        gap: px(6),
+        minWidth: px(102),
       }}
     >
-      <span className={`${theme.lcdInsetText} truncate font-semibold`} style={{ fontSize: px(13), fontFamily: 'ui-monospace,monospace' }}>
+      <span className="truncate font-semibold" style={{ fontSize: px(12.5) }}>
         {unitLabel(unitKey)}
       </span>
-      <ChevronRight size={ico(scale, 13)} className={theme.lcdInsetText} style={{ opacity: 0.75 }} />
+      <ChevronDown size={ico(scale, 13)} className={theme.mutedText} />
     </button>
   );
 
   const outLen = String(output).length;
-  const outSize = outLen > 16 ? 15 : outLen > 13 ? 18 : outLen > 10 ? 21 : outLen > 7 ? 25 : 29;
+  const outSize = outLen > 18 ? 15 : outLen > 15 ? 17 : outLen > 12 ? 19 : outLen > 9 ? 22 : outLen > 7 ? 25 : 28;
+
+  /* Paper tape: the last few conversions, newest first. */
+  const tape = useMemo(
+    () => (history || []).filter((h) => h.mode === 'Convert').slice(0, 6),
+    [history]
+  );
 
   return (
-    <div className="h-full flex flex-col overflow-hidden" style={{ paddingLeft: px(8.4), paddingRight: px(8.4), paddingBottom: px(8), gap: px(7) }}>
+    <div className="h-full flex flex-col overflow-hidden" style={{ paddingLeft: px(12), paddingRight: px(12), paddingBottom: px(12) }}>
       {/* ---- category chips ---- */}
-      <div className="shrink-0 flex overflow-x-auto no-scrollbar" style={{ gap: px(5), marginTop: px(4) }}>
+      <div className="shrink-0 flex overflow-x-auto no-scrollbar edge-fade" style={{ gap: px(6), marginTop: px(6) }}>
         {CATEGORY_LIST.map((c) => (
           <button
             key={c.id}
             onClick={() => switchCat(c.id)}
             className={`shrink-0 ${catId === c.id ? theme.segActive : `${theme.chipBg} ${theme.chipText}`}`}
-            style={{ borderRadius: px(8), padding: `${px(6)} ${px(11)}`, fontSize: px(12), fontWeight: 700 }}
+            style={{ borderRadius: px(10), padding: `${px(6)} ${px(11)}`, fontSize: px(12), fontWeight: 650 }}
           >
             {c.name}
           </button>
         ))}
       </div>
 
-      {/* ---- LCD ---- */}
-      <div
-        className={`shrink-0 relative ${theme.lcdBg} border-2 ${theme.lcdBorder} lcd-scanlines overflow-hidden`}
-        style={{ borderRadius: px(14), padding: px(11) }}
-      >
-        <div className={`absolute inset-0 ${theme.lcdGlow} pointer-events-none`} />
-
-        <div className="relative flex items-center justify-between" style={{ gap: px(8) }}>
-          <Selector side="from" unitKey={from} />
-          <span
-            className={`font-bold truncate ${theme.lcdResult}`}
-            style={{ fontSize: px(24), fontVariantNumeric: 'tabular-nums' }}
-          >
-            {entry}
-          </span>
-        </div>
-
-        {/* swap FAB */}
-        <div className="relative flex justify-center" style={{ height: px(4) }}>
+      {/* ---- display ---- */}
+      <div className={`${theme.panelBg} shrink-0 relative mt-3`} style={{ borderRadius: px(16), padding: px(14) }}>
+        <div className="flex items-center" style={{ gap: px(10) }}>
+          {/* swap */}
           <button
             onClick={swap}
-            className={`${theme.panelBg} flex items-center justify-center absolute active:scale-90`}
-            style={{ width: px(30), height: px(30), borderRadius: px(15), top: px(-11), zIndex: 2 }}
+            aria-label="Swap units"
+            className={`${theme.panelAlt} shrink-0 flex items-center justify-center active:scale-90`}
+            style={{ width: px(32), height: px(32), borderRadius: px(16) }}
           >
             <ArrowLeftRight size={ico(scale, 15)} className={theme.accent} />
           </button>
-        </div>
 
-        <div className="relative flex items-center justify-between" style={{ gap: px(8), marginTop: px(13) }}>
-          <Selector side="to" unitKey={to} />
-          <div className="flex items-center min-w-0" style={{ gap: px(7) }}>
-            <span
-              className={`font-bold truncate ${theme.lcdResult}`}
-              style={{ fontSize: px(outSize), fontVariantNumeric: 'tabular-nums' }}
-            >
-              {output}
-            </span>
-            <button onClick={copyOut} className={theme.lcdHeader} style={{ opacity: 0.8 }}>
-              {copied ? <Check size={ico(scale, 14)} /> : <Copy size={ico(scale, 14)} />}
-            </button>
+          <div className="flex-1 min-w-0 flex flex-col" style={{ gap: px(18) }}>
+            <div className="flex items-center justify-between" style={{ gap: px(8) }}>
+              <Selector side="from" unitKey={from} />
+              <div className="flex-1 min-w-0 text-right">
+                <span
+                  className={`font-semibold truncate inline-block max-w-full ${theme.lcdResult}`}
+                  style={{ fontSize: px(26), fontVariantNumeric: 'tabular-nums', letterSpacing: px(-0.6) }}
+                >
+                  {entry}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between" style={{ gap: px(8) }}>
+              <Selector side="to" unitKey={to} />
+              <div className="flex-1 min-w-0 flex items-center justify-end" style={{ gap: px(6) }}>
+                <span
+                  className={`font-semibold truncate ${theme.lcdResult}`}
+                  style={{ fontSize: px(outSize), fontVariantNumeric: 'tabular-nums', letterSpacing: px(-0.6) }}
+                >
+                  {output}
+                </span>
+                <button onClick={copyOut} aria-label="Copy result" className={`${theme.mutedText} active:scale-90 shrink-0`}>
+                  {copied ? <Check size={ico(scale, 14)} /> : <Copy size={ico(scale, 14)} />}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {rateText && (
-          <div className={`relative text-center ${theme.lcdPreview}`} style={{ fontSize: px(10), marginTop: px(7) }}>
+          <div className={`${theme.mutedText} text-center`} style={{ fontSize: px(10), marginTop: px(11) }}>
             {rateText}
           </div>
         )}
       </div>
 
-      {/* ---- unit picker (overlays the keypad area) ---- */}
-      {picker ? (
-        <div
-          className={`flex-1 min-h-0 overflow-y-auto thin-scroll ${theme.panelBg} border ${theme.panelBorder}`}
-          style={{ borderRadius: px(11), padding: px(7) }}
-        >
-          <div className={theme.mutedText} style={{ fontSize: px(10), fontWeight: 700, marginBottom: px(6) }}>
-            SELECT {picker === 'from' ? 'SOURCE' : 'TARGET'} UNIT
+      {/* ---- recent conversions (paper tape) ---- */}
+      <div
+        className="flex-1 min-h-0 flex flex-col justify-end overflow-y-auto thin-scroll"
+        style={{ paddingTop: px(8) }}
+      >
+        {tape.map((h) => (
+          <button
+            key={h.id}
+            onClick={() => { feedback('key'); setEntry(String(h.result).replace(/,/g, '')); }}
+            className={`${theme.mutedText} text-right truncate active:opacity-60`}
+            style={{ fontSize: px(11.5), fontVariantNumeric: 'tabular-nums', padding: `${px(2)} 0` }}
+          >
+            <span className="opacity-70">{h.expression}</span>
+            <span className="opacity-90"> = {h.result}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ---- keypad (always mounted; the picker floats above it) ---- */}
+      <div className="shrink-0 grid grid-cols-4 relative" style={{ gap: px(8), marginTop: px(10), height: px(462) }}>
+        <K label="7" cls={theme.numKey} onClick={() => digit('7')} />
+        <K label="8" cls={theme.numKey} onClick={() => digit('8')} />
+        <K label="9" cls={theme.numKey} onClick={() => digit('9')} />
+        <K label={<Delete size={ico(scale, 17)} />} cls={theme.funcKey} onClick={backspace} />
+
+        <K label="4" cls={theme.numKey} onClick={() => digit('4')} />
+        <K label="5" cls={theme.numKey} onClick={() => digit('5')} />
+        <K label="6" cls={theme.numKey} onClick={() => digit('6')} />
+        <K label="C" cls={theme.clearKey} fs={17} onClick={() => { feedback('clear'); setEntry('0'); }} />
+
+        <K label="1" cls={theme.numKey} onClick={() => digit('1')} />
+        <K label="2" cls={theme.numKey} onClick={() => digit('2')} />
+        <K label="3" cls={theme.numKey} onClick={() => digit('3')} />
+        <K label="±" cls={theme.funcKey} fs={17} onClick={toggleSign} />
+
+        <K label="0" cls={theme.numKey} onClick={() => digit('0')} />
+        <K label="00" cls={theme.numKey} fs={16} onClick={appendZeros} />
+        <K label="." cls={theme.numKey} onClick={() => digit('.')} />
+        <K label="OK" cls={theme.equalKey} fs={16} onClick={saveResult} />
+      </div>
+
+      {/* ---- unit picker sheet (floats above the keypad) ---- */}
+      {picker && (
+        <>
+          <button
+            className="absolute inset-0 z-10"
+            style={{ background: 'rgba(0,0,0,0.35)' }}
+            aria-label="Close unit picker"
+            onClick={() => setPicker(null)}
+          />
+          <div
+            className={`${theme.panelBg} absolute z-20 overflow-y-auto thin-scroll`}
+            style={{
+              left: 0, right: 0, bottom: 0,
+              maxHeight: '58%',
+              borderRadius: px(14),
+              padding: px(10),
+              boxShadow: '0 -8px 30px rgba(0,0,0,0.35)',
+            }}
+          >
+            <div className={`${theme.mutedText} font-bold`} style={{ fontSize: px(9.5), letterSpacing: px(0.6), marginBottom: px(7) }}>
+              SELECT {picker === 'from' ? 'SOURCE' : 'TARGET'} UNIT
+            </div>
+            <div className="grid grid-cols-2" style={{ gap: px(6) }}>
+              {units.map((u) => {
+                const active = (picker === 'from' ? from : to) === u.key;
+                return (
+                  <button
+                    key={u.key}
+                    onClick={() => {
+                      feedback('key');
+                      if (picker === 'from') setFrom(u.key); else setTo(u.key);
+                      setPicker(null);
+                    }}
+                    className={`text-left truncate ${active ? theme.segActive : `${theme.chipBg} ${theme.chipText}`}`}
+                    style={{ borderRadius: px(10), padding: `${px(9)} ${px(10)}`, fontSize: px(12), fontWeight: 600 }}
+                  >
+                    {u.name} ({u.symbol})
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-2" style={{ gap: px(5) }}>
-            {units.map((u) => {
-              const active = (picker === 'from' ? from : to) === u.key;
-              return (
-                <button
-                  key={u.key}
-                  onClick={() => {
-                    feedback('key');
-                    if (picker === 'from') setFrom(u.key); else setTo(u.key);
-                    setPicker(null);
-                  }}
-                  className={`text-left truncate ${active ? theme.segActive : `${theme.chipBg} ${theme.chipText}`}`}
-                  style={{ borderRadius: px(8), padding: `${px(8)} ${px(9)}`, fontSize: px(12), fontWeight: 600 }}
-                >
-                  {u.name} ({u.symbol})
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 min-h-0 grid grid-cols-4" style={{ gap: px(6) }}>
-          <K label="7" cls={theme.numKey} onClick={() => digit('7')} />
-          <K label="8" cls={theme.numKey} onClick={() => digit('8')} />
-          <K label="9" cls={theme.numKey} onClick={() => digit('9')} />
-          <K label={<Delete size={ico(scale, 18)} />} cls={theme.ceKey} onClick={backspace} />
-
-          <K label="4" cls={theme.numKey} onClick={() => digit('4')} />
-          <K label="5" cls={theme.numKey} onClick={() => digit('5')} />
-          <K label="6" cls={theme.numKey} onClick={() => digit('6')} />
-          <K label="C" cls={theme.clearKey} fs={17} onClick={() => { feedback('clear'); setEntry('0'); }} />
-
-          <K label="1" cls={theme.numKey} onClick={() => digit('1')} />
-          <K label="2" cls={theme.numKey} onClick={() => digit('2')} />
-          <K label="3" cls={theme.numKey} onClick={() => digit('3')} />
-          <K label="±" cls={theme.numKey} fs={17}
-             onClick={() => { feedback('key'); setEntry((e) => (e.startsWith('-') ? e.slice(1) : '-' + e)); }} />
-
-          <K label="0" cls={theme.numKey} onClick={() => digit('0')} />
-          <K label="00" cls={theme.numKey} fs={17} onClick={() => { digit('0'); digit('0'); }} />
-          <K label="." cls={theme.numKey} onClick={() => digit('.')} />
-          <K label="OK" cls={theme.equalKey} fs={17} onClick={saveResult} />
-        </div>
+        </>
       )}
     </div>
   );

@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { X, Trash2, CornerDownLeft, Copy, Check, Search, Download } from 'lucide-react';
-import { KEY_BASE } from '../utils/themeStyles.js';
 
 function timeAgo(ts) {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -53,67 +52,112 @@ export default function HistoryTape({ theme, history, onClose, onClear, onRecall
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end anim-fade" style={{ background: 'rgba(0,0,0,0.55)' }}>
+    <div className="absolute inset-0 z-50 flex flex-col justify-end anim-fade" style={{ background: 'rgba(0,0,0,0.45)' }}>
       <button className="absolute inset-0 w-full h-full cursor-default" onClick={onClose} aria-label="close" />
-      <div className={`relative anim-sheet rounded-t-2xl border-t-2 ${theme.modalBorder} ${theme.modalBg} flex flex-col`} style={{ maxHeight: '86%' }}>
-        <div className={`shrink-0 flex items-center justify-between px-3 py-2 border-b ${theme.panelBorder}`}>
-          <div>
-            <div className="text-[13px] font-extrabold">History Tape</div>
-            <div className={`text-[9px] uppercase tracking-widest ${theme.mutedText}`}>{history.length} entries · max 200</div>
+      <div className={`relative anim-sheet ${theme.modalBg} flex flex-col`} style={{ maxHeight: '88%', borderTopLeftRadius: 18, borderTopRightRadius: 18 }}>
+        {/* grabber */}
+        <div className="flex justify-center shrink-0" style={{ paddingTop: 7 }}>
+          <div className={`${theme.mutedText} opacity-40`} style={{ width: 36, height: 4, borderRadius: 4 }} />
+        </div>
+
+        <div className="shrink-0 flex items-center justify-between" style={{ padding: '10px 14px 8px' }}>
+          <div className="min-w-0">
+            <div className="font-semibold truncate" style={{ fontSize: 17 }}>History</div>
+            <div className={`${theme.mutedText}`} style={{ fontSize: 11 }}>
+              {history.length} {history.length === 1 ? 'entry' : 'entries'} · max 200
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <button onClick={exportTxt} className={`${KEY_BASE} ${theme.funcKey} h-7 w-7`} title="Export"><Download size={13} /></button>
+          <div className="flex items-center shrink-0" style={{ gap: 4 }}>
+            <button
+              onClick={exportTxt}
+              aria-label="Export history"
+              className={`${theme.chipBg} ${theme.chipText} flex items-center justify-center active:scale-90`}
+              style={{ width: 32, height: 32, borderRadius: 10 }}
+            >
+              <Download size={15} />
+            </button>
             <button
               onClick={() => {
                 feedback(confirmClear ? 'clear' : 'toggle');
                 if (confirmClear) { onClear(); setConfirmClear(false); } else setConfirmClear(true);
               }}
-              className={`${KEY_BASE} ${confirmClear ? theme.clearKey : theme.funcKey} h-7 px-2 text-[10px] flex-row gap-1`}
+              className={`${confirmClear ? theme.clearKey : `${theme.chipBg} ${theme.chipText}`} flex items-center justify-center active:scale-90`}
+              style={{ width: 32, height: 32, borderRadius: 10 }}
+              title="Clear history"
             >
-              <Trash2 size={13} />{confirmClear ? 'Sure?' : ''}
+              <Trash2 size={15} className={confirmClear ? '' : 'text-rose-400'} />
             </button>
-            <button onClick={onClose} className={`${KEY_BASE} ${theme.funcKey} h-7 w-7`}><X size={14} /></button>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className={`${theme.chipBg} ${theme.mutedText} flex items-center justify-center active:scale-90`}
+              style={{ width: 32, height: 32, borderRadius: 10 }}
+            >
+              <X size={16} />
+            </button>
           </div>
         </div>
 
-        <div className="shrink-0 px-3 py-2">
+        <div className="shrink-0" style={{ padding: '0 14px 10px' }}>
           <div className="relative">
-            <Search size={13} className={`absolute left-2 top-1/2 -translate-y-1/2 ${theme.mutedText}`} />
+            <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${theme.mutedText}`} />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search expressions or results…"
-              className={`w-full rounded-lg border pl-7 pr-2 py-1.5 text-[12px] ${theme.inputBg} outline-none focus:ring-2 ${theme.accentRing}`}
+              className={`w-full border outline-none ${theme.inputBg}`}
+              style={{ borderRadius: 10, padding: '9px 10px 9px 32px', fontSize: 13 }}
             />
           </div>
+          {confirmClear && (
+            <div className={`${theme.mutedText} text-center`} style={{ fontSize: 11, marginTop: 6 }}>
+              Tap the bin again to erase everything
+            </div>
+          )}
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scroll px-3 pb-3 space-y-1">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scroll" style={{ padding: '0 14px 16px' }}>
           {filtered.length === 0 && (
-            <div className={`text-center text-[11px] ${theme.mutedText} py-10`}>
+            <div className={`${theme.mutedText} text-center`} style={{ fontSize: 12, padding: '28px 0' }}>
               {history.length === 0 ? 'No calculations yet.' : 'No matches.'}
             </div>
           )}
-          {filtered.map((h) => (
-            <div key={h.id} className={`rounded-lg border ${theme.panelBorder} ${theme.panelBg} px-2 py-1.5`}>
-              <div className="flex items-center justify-between mb-0.5">
-                <span className={`text-[8px] font-bold uppercase tracking-widest ${theme.accent}`}>{h.mode}</span>
-                <span className={`text-[8px] ${theme.mutedText}`}>{timeAgo(h.time)}</span>
-              </div>
-              <div className={`text-[11px] tabular-nums break-all ${theme.mutedText}`}>{h.expression}</div>
-              <div className="flex items-end justify-between gap-2">
-                <div className="text-[15px] tabular-nums font-bold break-all">= {h.result}</div>
-                <div className="flex gap-1 shrink-0">
-                  <button onClick={() => copy(h)} className={`${KEY_BASE} ${theme.funcKey} h-6 w-6`}>
-                    {copiedId === h.id ? <Check size={11} /> : <Copy size={11} />}
-                  </button>
-                  <button onClick={() => { feedback('key'); onRecall(h.result); }} className={`${KEY_BASE} ${theme.equalKey} h-6 w-6`}>
-                    <CornerDownLeft size={11} />
-                  </button>
+          <div style={{ display: 'grid', gap: 6 }}>
+            {filtered.map((h) => (
+              <div key={h.id} className={`${theme.panelBg}`} style={{ borderRadius: 12, padding: '8px 10px' }}>
+                <div className="flex items-center justify-between" style={{ gap: 8 }}>
+                  <span className={`${theme.accent} font-bold truncate`} style={{ fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase' }}>{h.mode}</span>
+                  <span className={`${theme.mutedText} shrink-0`} style={{ fontSize: 10 }}>{timeAgo(h.time)}</span>
+                </div>
+                <div className={`${theme.mutedText} break-all`} style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
+                  {h.expression}
+                </div>
+                <div className="flex items-end justify-between" style={{ gap: 8 }}>
+                  <div className="font-semibold break-all" style={{ fontSize: 16, fontVariantNumeric: 'tabular-nums' }}>
+                    = {h.result}
+                  </div>
+                  <div className="flex shrink-0" style={{ gap: 4 }}>
+                    <button
+                      onClick={() => copy(h)}
+                      aria-label="Copy entry"
+                      className={`${theme.chipBg} ${theme.mutedText} flex items-center justify-center active:scale-90`}
+                      style={{ width: 26, height: 26, borderRadius: 8 }}
+                    >
+                      {copiedId === h.id ? <Check size={13} /> : <Copy size={13} />}
+                    </button>
+                    <button
+                      onClick={() => { feedback('key'); onRecall(h.result); }}
+                      aria-label="Use this result"
+                      className={`${theme.accentBg} ${theme.accentText} flex items-center justify-center active:scale-90`}
+                      style={{ width: 26, height: 26, borderRadius: 8 }}
+                    >
+                      <CornerDownLeft size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

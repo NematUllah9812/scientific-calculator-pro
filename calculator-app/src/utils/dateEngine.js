@@ -193,18 +193,25 @@ export function buildCalendarGrid(year, month) {
   const first = new Date(year, month, 1);
   const startDow = first.getDay();
   const dim = daysInMonth(year, month);
-  const prevDim = daysInMonth(month === 0 ? year - 1 : year, month === 0 ? 11 : month - 1);
+
+  /* Previous / next month are normalised so December and January wrap
+     correctly instead of producing month 12 or month -1. */
+  const prevMonth = (month + 11) % 12;
+  const prevYear = month === 0 ? year - 1 : year;
+  const nextMonth = (month + 1) % 12;
+  const nextYear = month === 11 ? year + 1 : year;
+  const prevDim = daysInMonth(prevYear, prevMonth);
 
   const cells = [];
   for (let i = startDow - 1; i >= 0; i--) {
-    cells.push({ day: prevDim - i, current: false, month: month - 1, year: month === 0 ? year - 1 : year });
+    cells.push({ day: prevDim - i, current: false, month: prevMonth, year: prevYear });
   }
   for (let d = 1; d <= dim; d++) {
     cells.push({ day: d, current: true, month, year });
   }
   let nd = 1;
   while (cells.length < 42) {
-    cells.push({ day: nd++, current: false, month: month + 1, year: month === 11 ? year + 1 : year });
+    cells.push({ day: nd++, current: false, month: nextMonth, year: nextYear });
   }
   return cells;
 }

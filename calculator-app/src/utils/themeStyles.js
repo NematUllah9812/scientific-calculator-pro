@@ -1,298 +1,320 @@
 /* =====================================================================
- * themeStyles.js — 5 visual theme profiles. Default: casio
+ * themeStyles.js — Minimal, iOS-inspired theme profiles.
  *
- * v4 redesign: keys are FLAT (no bevel / no bottom border). Colours were
- * sampled directly from the reference screenshots, so the `casio` theme
- * reproduces them exactly. Every other theme re-skins the same tokens,
- * so all six tabs stay visually consistent within a theme.
+ * The app used to be skinned like a physical Casio: a raised LCD frame
+ * with scanlines, beveled keycaps and rainbow accents. Every token below
+ * now describes a FLAT surface so the UI can read as one clean system:
+ *
+ *   appBg        page background
+ *   panelBg      card / inset surface
+ *   panelAlt     secondary surface (chips, function keys)
+ *   numKey       digit keys
+ *   funcKey      function keys (AC, %, ±, …)
+ *   opKey        operator keys
+ *   equalKey     the "=" key
+ *   accent       one accent colour used for operators, active state and
+ *                the live result — mirroring the iOS calculator.
+ *
+ * `lcd*` names are kept for backwards compatibility with older call
+ * sites but now describe a frameless display.
  * ===================================================================== */
 
 export const THEME_PROFILES = {
   /* ---------------------------------------------------------------
-   * 1. Classic Casio FX  (sampled from reference screenshots)
-   * ------------------------------------------------------------- */
-  casio: {
-    id: 'casio',
-    name: 'Casio FX Classic',
-
-    appBg: 'bg-[#2a3141]',
-    headerBg: 'bg-[#1e2633]',
-    frameBorder: 'border-[#161d27]',
-    panelBg: 'bg-[#1c1d22]',
-    panelBorder: 'border-[#333a49]',
-    statusBarText: 'text-slate-300',
-    mutedText: 'text-slate-400',
-    bodyText: 'text-slate-100',
-
-    /* LCD — pale sage green */
-    lcdBg: 'bg-[#8fa38a]',
-    lcdBorder: 'border-[#6b7d67]',
-    lcdGlow: 'bg-[#a4b89f]/15',
-    lcdHeader: 'text-[#26331f]',
-    lcdFormula: 'text-[#16210f]',
-    lcdPreview: 'text-[#2f4227]',
-    lcdResult: 'text-[#0d1408]',
-    lcdChip: 'bg-[#637160] text-[#e8f0e4] border-[#4d5a4b]',
-    lcdInset: 'bg-[#3a4536]',
-    lcdInsetText: 'text-[#9fe3b0]',
-
-    badge2nd: 'bg-[#d97706] text-black border-[#b45309]',
-    badgeHyp: 'bg-[#0384c6] text-white border-[#036aa0]',
-    badgeMem: 'bg-[#7c3aed] text-white border-[#6d28d9]',
-
-    /* Keys — flat */
-    funcKey: 'bg-[#3b4658] active:bg-[#48546a] text-slate-100',
-    funcAltLabel: 'text-[#f0a13a]',
-    numKey: 'bg-[#465568] active:bg-[#526279] text-white',
-    opKey: 'bg-[#0384c6] active:bg-[#0470a8] text-white',
-    clearKey: 'bg-[#dc2625] active:bg-[#b91c1c] text-white',
-    ceKey: 'bg-[#d87706] active:bg-[#b45309] text-white',
-    equalKey: 'bg-[#ea580b] active:bg-[#c2410c] text-white',
-
-    /* Chips / tabs */
-    chipBg: 'bg-[#28292e]',
-    chipText: 'text-slate-200',
-    tabActive: 'bg-[#0384c6] text-white',
-    tabInactive: 'text-slate-400',
-    segActive: 'bg-[#0384c6] text-white',
-    segInactive: 'bg-[#242b38] text-slate-400',
-
-    accent: 'text-[#2dd4a7]',
-    accentBg: 'bg-[#10b981]',
-    accentRing: 'ring-[#0384c6]/50',
-    accentSoft: 'bg-[#12312c] border-[#1f5145]',
-
-    modalBg: 'bg-[#232b39]',
-    modalBorder: 'border-[#3b4759]',
-    inputBg: 'bg-[#151a23] border-[#3b4759] text-slate-100',
-    lcdIsLight: true,
-  },
-
-  /* ---------------------------------------------------------------
-   * 2. Dark Obsidian
+   * 1. Midnight — iOS dark. Pure black page, orange operators.
    * ------------------------------------------------------------- */
   dark: {
     id: 'dark',
-    name: 'Dark Obsidian',
+    name: 'Midnight',
 
-    appBg: 'bg-[#0b0b0d]',
+    appBg: 'bg-[#000000] glass-dark',
     headerBg: 'bg-[#000000]',
-    frameBorder: 'border-[#232326]',
-    panelBg: 'bg-[#161619]',
-    panelBorder: 'border-[#2b2b30]',
-    statusBarText: 'text-zinc-400',
-    mutedText: 'text-zinc-500',
-    bodyText: 'text-zinc-100',
+    panelBg: 'bg-[#1c1c1e]',
+    panelAlt: 'bg-[#2c2c2e]',
+    panelBorder: 'border-[#3a3a3c]',
+    bodyText: 'text-[#ffffff]',
+    mutedText: 'text-[#8e8e93]',
+    statusBarText: 'text-[#8e8e93]',
 
-    lcdBg: 'bg-[#050506]',
-    lcdBorder: 'border-[#1f3a30]',
-    lcdGlow: 'bg-emerald-500/5',
-    lcdHeader: 'text-emerald-400/80',
-    lcdFormula: 'text-zinc-300',
-    lcdPreview: 'text-emerald-400/60',
-    lcdResult: 'text-emerald-400',
-    lcdChip: 'bg-[#14261f] text-emerald-300 border-[#1f3a30]',
-    lcdInset: 'bg-[#101d17]',
-    lcdInsetText: 'text-emerald-300',
+    /* Frameless display */
+    lcdBg: 'bg-transparent',
+    lcdBorder: 'border-transparent',
+    lcdGlow: 'bg-transparent',
+    lcdHeader: 'text-[#8e8e93]',
+    lcdFormula: 'text-[#c7c7cc]',
+    lcdPreview: 'text-[#8e8e93]',
+    lcdResult: 'text-[#ff9f0a]',
+    lcdChip: 'bg-[#2c2c2e] text-[#ffffff] border-[#3a3a3c]',
+    lcdInset: 'bg-[#2c2c2e]',
+    lcdInsetText: 'text-[#ffffff]',
 
-    badge2nd: 'bg-amber-500 text-black border-amber-600',
-    badgeHyp: 'bg-sky-600 text-white border-sky-700',
-    badgeMem: 'bg-violet-600 text-white border-violet-700',
+    badge2nd: 'bg-[#ff9f0a] text-black border-[#ff9f0a]',
+    badgeHyp: 'bg-[#5e5ce6] text-white border-[#5e5ce6]',
+    badgeMem: 'bg-[#ff375f] text-white border-[#ff375f]',
 
-    funcKey: 'bg-[#1e1e22] active:bg-[#2a2a30] text-zinc-200',
-    funcAltLabel: 'text-amber-400/90',
-    numKey: 'bg-[#2a2a30] active:bg-[#35353d] text-white',
-    opKey: 'bg-[#047857] active:bg-[#059669] text-white',
-    clearKey: 'bg-[#7f1d1d] active:bg-[#991b1b] text-rose-100',
-    ceKey: 'bg-[#78350f] active:bg-[#92400e] text-amber-100',
-    equalKey: 'bg-[#059669] active:bg-[#047857] text-white',
+    /* Keys */
+    funcKey: 'bg-white/[0.12] text-[#ffffff] glass',
+    funcAltLabel: 'text-[#ff9f0a]',
+    numKey: 'bg-white/[0.07] text-[#ffffff] glass',
+    opKey: 'bg-[#ff9f0a] text-black glass glass-accent',
+    clearKey: 'bg-white/[0.12] text-[#ff9f0a] glass',
+    ceKey: 'bg-white/[0.12] text-[#ffffff] glass',
+    equalKey: 'bg-[#ff9f0a] text-black glass glass-accent',
 
-    chipBg: 'bg-[#1a1a1e]',
-    chipText: 'text-zinc-300',
-    tabActive: 'bg-[#059669] text-white',
-    tabInactive: 'text-zinc-500',
-    segActive: 'bg-[#059669] text-white',
-    segInactive: 'bg-[#161619] text-zinc-500',
+    /* Chips / tabs / segments */
+    chipBg: 'bg-[#2c2c2e]',
+    chipText: 'text-[#ffffff]',
+    tabActive: 'bg-[#ff9f0a] text-black',
+    tabInactive: 'text-[#8e8e93]',
+    segActive: 'bg-[#ff9f0a] text-black',
+    segInactive: 'bg-[#2c2c2e] text-[#8e8e93]',
 
-    accent: 'text-emerald-400',
-    accentBg: 'bg-emerald-600',
-    accentRing: 'ring-emerald-500/50',
-    accentSoft: 'bg-[#0d2620] border-[#17453a]',
+    accent: 'text-[#ff9f0a]',
+    accentBg: 'bg-[#ff9f0a]',
+    accentText: 'text-black',
+    accentRing: 'ring-[#ff9f0a]/40',
+    accentSoft: 'bg-[#ff9f0a]/10 border-[#ff9f0a]/25',
+    accentBorder: 'border-[#ff9f0a]/30',
 
-    modalBg: 'bg-[#161619]',
-    modalBorder: 'border-[#2b2b30]',
-    inputBg: 'bg-[#0b0b0d] border-[#2b2b30] text-zinc-100',
+    modalBg: 'bg-[#1c1c1e]',
+    modalBorder: 'border-[#3a3a3c]',
+    inputBg: 'bg-[#2c2c2e] border-[#3a3a3c] text-[#ffffff]',
     lcdIsLight: false,
   },
 
   /* ---------------------------------------------------------------
-   * 3. Cyber Neon OLED
+   * 2. Slate — cool graphite with an iOS-blue accent.
+   * ------------------------------------------------------------- */
+  casio: {
+    id: 'casio',
+    name: 'Slate',
+
+    appBg: 'bg-[#0f1219] glass-dark',
+    headerBg: 'bg-[#0f1219]',
+    panelBg: 'bg-[#181d27]',
+    panelAlt: 'bg-[#232a37]',
+    panelBorder: 'border-[#2d3646]',
+    bodyText: 'text-[#f3f6fb]',
+    mutedText: 'text-[#8d97a8]',
+    statusBarText: 'text-[#8d97a8]',
+
+    lcdBg: 'bg-transparent',
+    lcdBorder: 'border-transparent',
+    lcdGlow: 'bg-transparent',
+    lcdHeader: 'text-[#8d97a8]',
+    lcdFormula: 'text-[#c2cbd9]',
+    lcdPreview: 'text-[#8d97a8]',
+    lcdResult: 'text-[#0a84ff]',
+    lcdChip: 'bg-[#232a37] text-[#f3f6fb] border-[#2d3646]',
+    lcdInset: 'bg-[#232a37]',
+    lcdInsetText: 'text-[#f3f6fb]',
+
+    badge2nd: 'bg-[#0a84ff] text-white border-[#0a84ff]',
+    badgeHyp: 'bg-[#5e5ce6] text-white border-[#5e5ce6]',
+    badgeMem: 'bg-[#ff375f] text-white border-[#ff375f]',
+
+    funcKey: 'bg-white/[0.11] text-[#f3f6fb] glass',
+    funcAltLabel: 'text-[#0a84ff]',
+    numKey: 'bg-white/[0.06] text-[#f3f6fb] glass',
+    opKey: 'bg-[#0a84ff] text-white glass glass-accent',
+    clearKey: 'bg-white/[0.11] text-[#0a84ff] glass',
+    ceKey: 'bg-white/[0.11] text-[#f3f6fb] glass',
+    equalKey: 'bg-[#0a84ff] text-white glass glass-accent',
+
+    chipBg: 'bg-[#232a37]',
+    chipText: 'text-[#f3f6fb]',
+    tabActive: 'bg-[#0a84ff] text-white',
+    tabInactive: 'text-[#8d97a8]',
+    segActive: 'bg-[#0a84ff] text-white',
+    segInactive: 'bg-[#232a37] text-[#8d97a8]',
+
+    accent: 'text-[#0a84ff]',
+    accentBg: 'bg-[#0a84ff]',
+    accentText: 'text-white',
+    accentRing: 'ring-[#0a84ff]/40',
+    accentSoft: 'bg-[#0a84ff]/10 border-[#0a84ff]/25',
+    accentBorder: 'border-[#0a84ff]/30',
+
+    modalBg: 'bg-[#181d27]',
+    modalBorder: 'border-[#2d3646]',
+    inputBg: 'bg-[#232a37] border-[#2d3646] text-[#f3f6fb]',
+    lcdIsLight: false,
+  },
+
+  /* ---------------------------------------------------------------
+   * 3. Neon — OLED black with an electric cyan accent.
    * ------------------------------------------------------------- */
   neon: {
     id: 'neon',
-    name: 'Cyber Neon OLED',
+    name: 'Neon OLED',
 
-    appBg: 'bg-[#000000]',
-    headerBg: 'bg-[#000000]',
-    frameBorder: 'border-[#0d2b33]',
-    panelBg: 'bg-[#05080f]',
-    panelBorder: 'border-[#0e3a44]',
-    statusBarText: 'text-cyan-400',
-    mutedText: 'text-cyan-700',
-    bodyText: 'text-cyan-100',
+    appBg: 'bg-[#04060c] glass-dark',
+    headerBg: 'bg-[#04060c]',
+    panelBg: 'bg-[#0a0f1c]',
+    panelAlt: 'bg-[#141c30]',
+    panelBorder: 'border-[#1e2942]',
+    bodyText: 'text-[#e2ecff]',
+    mutedText: 'text-[#6b7c9c]',
+    statusBarText: 'text-[#6b7c9c]',
 
-    lcdBg: 'bg-[#00060a]',
-    lcdBorder: 'border-[#0e7490]',
-    lcdGlow: 'bg-cyan-500/10',
-    lcdHeader: 'text-cyan-400',
-    lcdFormula: 'text-cyan-200',
-    lcdPreview: 'text-fuchsia-400/80',
-    lcdResult: 'text-cyan-300',
-    lcdChip: 'bg-[#062b33] text-cyan-300 border-[#0e7490]',
-    lcdInset: 'bg-[#04212a]',
-    lcdInsetText: 'text-cyan-300',
+    lcdBg: 'bg-transparent',
+    lcdBorder: 'border-transparent',
+    lcdGlow: 'bg-transparent',
+    lcdHeader: 'text-[#6b7c9c]',
+    lcdFormula: 'text-[#b8c8e4]',
+    lcdPreview: 'text-[#6b7c9c]',
+    lcdResult: 'text-[#22d3ee]',
+    lcdChip: 'bg-[#141c30] text-[#e2ecff] border-[#1e2942]',
+    lcdInset: 'bg-[#141c30]',
+    lcdInsetText: 'text-[#e2ecff]',
 
-    badge2nd: 'bg-fuchsia-500 text-black border-fuchsia-400',
-    badgeHyp: 'bg-cyan-500 text-black border-cyan-400',
-    badgeMem: 'bg-violet-500 text-black border-violet-400',
+    badge2nd: 'bg-[#22d3ee] text-black border-[#22d3ee]',
+    badgeHyp: 'bg-[#a855f7] text-white border-[#a855f7]',
+    badgeMem: 'bg-[#f43f5e] text-white border-[#f43f5e]',
 
-    funcKey: 'bg-[#0a1420] active:bg-[#112034] text-cyan-300',
-    funcAltLabel: 'text-fuchsia-400',
-    numKey: 'bg-[#101c2e] active:bg-[#18293f] text-white',
-    opKey: 'bg-[#0891b2] active:bg-[#06b6d4] text-black',
-    clearKey: 'bg-[#9f1239] active:bg-[#be123c] text-white',
-    ceKey: 'bg-[#a16207] active:bg-[#ca8a04] text-black',
-    equalKey: 'bg-[#d946ef] active:bg-[#c026d3] text-black',
+    funcKey: 'bg-white/[0.11] text-[#e2ecff] glass',
+    funcAltLabel: 'text-[#22d3ee]',
+    numKey: 'bg-white/[0.06] text-[#e2ecff] glass',
+    opKey: 'bg-[#22d3ee] text-black glass glass-accent',
+    clearKey: 'bg-white/[0.11] text-[#22d3ee] glass',
+    ceKey: 'bg-white/[0.11] text-[#e2ecff] glass',
+    equalKey: 'bg-[#22d3ee] text-black glass glass-accent',
 
-    chipBg: 'bg-[#08131c]',
-    chipText: 'text-cyan-300',
-    tabActive: 'bg-[#06b6d4] text-black',
-    tabInactive: 'text-cyan-800',
-    segActive: 'bg-[#06b6d4] text-black',
-    segInactive: 'bg-[#05080f] text-cyan-800',
+    chipBg: 'bg-[#141c30]',
+    chipText: 'text-[#e2ecff]',
+    tabActive: 'bg-[#22d3ee] text-black',
+    tabInactive: 'text-[#6b7c9c]',
+    segActive: 'bg-[#22d3ee] text-black',
+    segInactive: 'bg-[#141c30] text-[#6b7c9c]',
 
-    accent: 'text-cyan-400',
-    accentBg: 'bg-cyan-500',
-    accentRing: 'ring-cyan-400/50',
-    accentSoft: 'bg-[#04212b] border-[#0e7490]',
+    accent: 'text-[#22d3ee]',
+    accentBg: 'bg-[#22d3ee]',
+    accentText: 'text-black',
+    accentRing: 'ring-[#22d3ee]/40',
+    accentSoft: 'bg-[#22d3ee]/10 border-[#22d3ee]/25',
+    accentBorder: 'border-[#22d3ee]/30',
 
-    modalBg: 'bg-[#05080f]',
-    modalBorder: 'border-[#0e3a44]',
-    inputBg: 'bg-black border-[#0e3a44] text-cyan-200',
+    modalBg: 'bg-[#0a0f1c]',
+    modalBorder: 'border-[#1e2942]',
+    inputBg: 'bg-[#141c30] border-[#1e2942] text-[#e2ecff]',
     lcdIsLight: false,
   },
 
   /* ---------------------------------------------------------------
-   * 4. Retro Matrix Green
+   * 4. Terminal — deep green, monospace-friendly.
    * ------------------------------------------------------------- */
   retro: {
     id: 'retro',
-    name: 'Retro Matrix Green',
+    name: 'Terminal',
 
-    appBg: 'bg-[#111a12]',
-    headerBg: 'bg-[#0c130d]',
-    frameBorder: 'border-[#1d2b20]',
-    panelBg: 'bg-[#16211a]',
-    panelBorder: 'border-[#27382a]',
-    statusBarText: 'text-[#4ade80]',
-    mutedText: 'text-[#4ade80]/60',
-    bodyText: 'text-[#dcfce7]',
+    appBg: 'bg-[#030b06] glass-dark',
+    headerBg: 'bg-[#030b06]',
+    panelBg: 'bg-[#07150c]',
+    panelAlt: 'bg-[#0d2213]',
+    panelBorder: 'border-[#14361f]',
+    bodyText: 'text-[#d7ffe4]',
+    mutedText: 'text-[#5f8f72]',
+    statusBarText: 'text-[#5f8f72]',
 
-    lcdBg: 'bg-[#0b120c]',
-    lcdBorder: 'border-[#22c55e]/40',
-    lcdGlow: 'bg-[#22c55e]/10',
-    lcdHeader: 'text-[#4ade80]',
-    lcdFormula: 'text-[#86efac]',
-    lcdPreview: 'text-[#22c55e]/70',
+    lcdBg: 'bg-transparent',
+    lcdBorder: 'border-transparent',
+    lcdGlow: 'bg-transparent',
+    lcdHeader: 'text-[#5f8f72]',
+    lcdFormula: 'text-[#9de7b4]',
+    lcdPreview: 'text-[#5f8f72]',
     lcdResult: 'text-[#4ade80]',
-    lcdChip: 'bg-[#14301c] text-[#86efac] border-[#22c55e]/40',
-    lcdInset: 'bg-[#12251a]',
-    lcdInsetText: 'text-[#86efac]',
+    lcdChip: 'bg-[#0d2213] text-[#9de7b4] border-[#14361f]',
+    lcdInset: 'bg-[#0d2213]',
+    lcdInsetText: 'text-[#d7ffe4]',
 
-    badge2nd: 'bg-[#facc15] text-black border-[#eab308]',
-    badgeHyp: 'bg-[#22c55e] text-black border-[#16a34a]',
-    badgeMem: 'bg-[#a3e635] text-black border-[#84cc16]',
+    badge2nd: 'bg-[#facc15] text-black border-[#facc15]',
+    badgeHyp: 'bg-[#22c55e] text-black border-[#22c55e]',
+    badgeMem: 'bg-[#a3e635] text-black border-[#a3e635]',
 
-    funcKey: 'bg-[#1e2c21] active:bg-[#27382a] text-[#86efac]',
+    funcKey: 'bg-white/[0.10] text-[#d7ffe4] glass',
     funcAltLabel: 'text-[#facc15]',
-    numKey: 'bg-[#27382a] active:bg-[#324635] text-[#eafff0]',
-    opKey: 'bg-[#16a34a] active:bg-[#15803d] text-black',
-    clearKey: 'bg-[#991b1b] active:bg-[#7f1d1d] text-[#fecaca]',
-    ceKey: 'bg-[#854d0e] active:bg-[#713f12] text-[#fde047]',
-    equalKey: 'bg-[#22c55e] active:bg-[#16a34a] text-black',
+    numKey: 'bg-white/[0.05] text-[#d7ffe4] glass',
+    opKey: 'bg-[#4ade80] text-black glass glass-accent',
+    clearKey: 'bg-white/[0.10] text-[#4ade80] glass',
+    ceKey: 'bg-white/[0.10] text-[#d7ffe4] glass',
+    equalKey: 'bg-[#4ade80] text-black glass glass-accent',
 
-    chipBg: 'bg-[#16211a]',
-    chipText: 'text-[#86efac]',
-    tabActive: 'bg-[#22c55e] text-black',
-    tabInactive: 'text-[#4ade80]/50',
-    segActive: 'bg-[#22c55e] text-black',
-    segInactive: 'bg-[#16211a] text-[#4ade80]/50',
+    chipBg: 'bg-[#0d2213]',
+    chipText: 'text-[#d7ffe4]',
+    tabActive: 'bg-[#4ade80] text-black',
+    tabInactive: 'text-[#5f8f72]',
+    segActive: 'bg-[#4ade80] text-black',
+    segInactive: 'bg-[#0d2213] text-[#5f8f72]',
 
     accent: 'text-[#4ade80]',
-    accentBg: 'bg-[#22c55e]',
-    accentRing: 'ring-[#22c55e]/50',
-    accentSoft: 'bg-[#0f2415] border-[#22c55e]/40',
+    accentBg: 'bg-[#4ade80]',
+    accentText: 'text-black',
+    accentRing: 'ring-[#4ade80]/40',
+    accentSoft: 'bg-[#4ade80]/10 border-[#4ade80]/25',
+    accentBorder: 'border-[#4ade80]/30',
 
-    modalBg: 'bg-[#16211a]',
-    modalBorder: 'border-[#27382a]',
-    inputBg: 'bg-[#0b120c] border-[#27382a] text-[#86efac]',
+    modalBg: 'bg-[#07150c]',
+    modalBorder: 'border-[#14361f]',
+    inputBg: 'bg-[#0d2213] border-[#14361f] text-[#d7ffe4]',
     lcdIsLight: false,
   },
 
   /* ---------------------------------------------------------------
-   * 5. Titanium Light
+   * 5. Daylight — iOS light.
    * ------------------------------------------------------------- */
   light: {
     id: 'light',
-    name: 'Titanium Light',
+    name: 'Daylight',
 
-    appBg: 'bg-[#e8ecf1]',
-    headerBg: 'bg-[#ffffff]',
-    frameBorder: 'border-[#cbd5e1]',
+    appBg: 'bg-[#f2f2f7] glass-light',
+    headerBg: 'bg-[#f2f2f7]',
     panelBg: 'bg-[#ffffff]',
-    panelBorder: 'border-[#d7dee7]',
-    statusBarText: 'text-slate-600',
-    mutedText: 'text-slate-500',
-    bodyText: 'text-slate-900',
+    panelAlt: 'bg-[#e7e7ec]',
+    panelBorder: 'border-[#dcdce3]',
+    bodyText: 'text-[#000000]',
+    mutedText: 'text-[#8a8a8e]',
+    statusBarText: 'text-[#8a8a8e]',
 
-    lcdBg: 'bg-[#f8fafc]',
-    lcdBorder: 'border-[#cbd5e1]',
-    lcdGlow: 'bg-blue-500/5',
-    lcdHeader: 'text-slate-500',
-    lcdFormula: 'text-slate-700',
-    lcdPreview: 'text-slate-400',
-    lcdResult: 'text-slate-900',
-    lcdChip: 'bg-[#e2e8f0] text-slate-700 border-[#cbd5e1]',
-    lcdInset: 'bg-[#e2e8f0]',
-    lcdInsetText: 'text-teal-700',
+    lcdBg: 'bg-transparent',
+    lcdBorder: 'border-transparent',
+    lcdGlow: 'bg-transparent',
+    lcdHeader: 'text-[#8a8a8e]',
+    lcdFormula: 'text-[#3a3a3c]',
+    lcdPreview: 'text-[#8a8a8e]',
+    lcdResult: 'text-[#ff9500]',
+    lcdChip: 'bg-[#e7e7ec] text-[#1c1c1e] border-[#dcdce3]',
+    lcdInset: 'bg-[#e7e7ec]',
+    lcdInsetText: 'text-[#1c1c1e]',
 
-    badge2nd: 'bg-amber-500 text-white border-amber-600',
-    badgeHyp: 'bg-blue-600 text-white border-blue-700',
-    badgeMem: 'bg-violet-600 text-white border-violet-700',
+    badge2nd: 'bg-[#ff9500] text-white border-[#ff9500]',
+    badgeHyp: 'bg-[#5856d6] text-white border-[#5856d6]',
+    badgeMem: 'bg-[#ff2d55] text-white border-[#ff2d55]',
 
-    funcKey: 'bg-[#dde3ea] active:bg-[#cdd6e0] text-slate-800',
-    funcAltLabel: 'text-amber-700',
-    numKey: 'bg-[#ffffff] active:bg-[#eef2f7] text-slate-900',
-    opKey: 'bg-[#2563eb] active:bg-[#1d4ed8] text-white',
-    clearKey: 'bg-[#dc2626] active:bg-[#b91c1c] text-white',
-    ceKey: 'bg-[#d97706] active:bg-[#b45309] text-white',
-    equalKey: 'bg-[#ea580c] active:bg-[#c2410c] text-white',
+    funcKey: 'bg-black/[0.07] text-[#000000] glass',
+    funcAltLabel: 'text-[#ff9500]',
+    numKey: 'bg-white/[0.92] text-[#000000] glass',
+    opKey: 'bg-[#ff9500] text-white glass glass-accent',
+    clearKey: 'bg-black/[0.07] text-[#ff9500] glass',
+    ceKey: 'bg-black/[0.07] text-[#000000] glass',
+    equalKey: 'bg-[#ff9500] text-white glass glass-accent',
 
-    chipBg: 'bg-[#e2e8f0]',
-    chipText: 'text-slate-700',
-    tabActive: 'bg-[#2563eb] text-white',
-    tabInactive: 'text-slate-500',
-    segActive: 'bg-[#2563eb] text-white',
-    segInactive: 'bg-[#e2e8f0] text-slate-500',
+    chipBg: 'bg-[#e7e7ec]',
+    chipText: 'text-[#1c1c1e]',
+    tabActive: 'bg-[#ff9500] text-white',
+    tabInactive: 'text-[#8a8a8e]',
+    segActive: 'bg-[#ff9500] text-white',
+    segInactive: 'bg-[#e7e7ec] text-[#8a8a8e]',
 
-    accent: 'text-[#0f766e]',
-    accentBg: 'bg-[#0d9488]',
-    accentRing: 'ring-blue-500/50',
-    accentSoft: 'bg-[#d7f2ee] border-[#99e0d6]',
+    accent: 'text-[#ff9500]',
+    accentBg: 'bg-[#ff9500]',
+    accentText: 'text-white',
+    accentRing: 'ring-[#ff9500]/40',
+    accentSoft: 'bg-[#ff9500]/10 border-[#ff9500]/25',
+    accentBorder: 'border-[#ff9500]/30',
 
-    modalBg: 'bg-white',
-    modalBorder: 'border-[#cbd5e1]',
-    inputBg: 'bg-[#f1f5f9] border-[#cbd5e1] text-slate-900',
+    modalBg: 'bg-[#ffffff]',
+    modalBorder: 'border-[#dcdce3]',
+    inputBg: 'bg-[#f2f2f7] border-[#dcdce3] text-[#000000]',
     lcdIsLight: true,
   },
 };
@@ -304,10 +326,12 @@ export function getTheme(id) {
   return THEME_PROFILES[id] || THEME_PROFILES[DEFAULT_THEME];
 }
 
-/** Flat keycap geometry (radius + press animation supplied per-component). */
+/** Flat keycap geometry — no bevel, no bottom border. */
 export const KEY_BASE =
   'select-none flex flex-col items-center justify-center relative overflow-hidden ' +
-  'transition-[transform,background-color] duration-75 active:scale-[0.97] font-medium leading-none';
+  'transition-[transform,background-color,opacity,filter,box-shadow] duration-100 ' +
+  'font-medium leading-none outline-none focus-visible:ring-2';
 
 export const TAB_BASE =
-  'flex items-center justify-center gap-1 font-semibold transition-all duration-150 active:scale-95 whitespace-nowrap';
+  'flex items-center justify-center gap-1 font-semibold transition-all duration-150 ' +
+  'active:scale-95 whitespace-nowrap';
