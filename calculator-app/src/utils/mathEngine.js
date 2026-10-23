@@ -498,6 +498,28 @@ export function safeEvaluate(expression, opts = {}) {
   }
 }
 
+/**
+ * Live preview value.
+ *
+ * While the user is still typing the expression is often incomplete
+ * ("12 +"). In that case the pending operand is shown instead of an
+ * error, which is what a hardware calculator does.
+ */
+export function previewValue(expression, opts = {}) {
+  const e = String(expression || '').trim();
+  if (!e) return null;
+
+  const direct = safeEvaluate(e, opts);
+  if (direct !== null) return direct;
+
+  const trimmed = e.replace(/[+\-−×÷*/^%]+$/, '');
+  if (trimmed && trimmed !== e) {
+    const partial = safeEvaluate(trimmed, opts);
+    if (partial !== null) return partial;
+  }
+  return null;
+}
+
 /* ---------------------------------------------------------------------
  * Result formatting
  * ------------------------------------------------------------------- */
@@ -510,7 +532,11 @@ export function formatResult(value, { notation = 'standard', precision = 10, tho
   const p = Math.max(0, Math.min(14, precision));
 
   if (notation === 'scientific') {
-    return value.toExponential(Math.min(p, 13)).replace('e', 'e');
+    /* Trim the padding zeros so 500 reads "5e+2", not "5.0000000000e+2". */
+    return value
+      .toExponential(Math.min(p, 13))
+      .replace(/(\.\d*?)0+e/, '$1e')
+      .replace(/\.e/, 'e');
   }
 
   if (notation === 'engineering') {
@@ -526,7 +552,8 @@ export function formatResult(value, { notation = 'standard', precision = 10, tho
     return value.toExponential(Math.min(p, 10));
   }
 
-  let s = parseFloat(value.toPrecision(Math.max(1, p + 1))).toString();
+  /* `precision` = number of significant digits to keep. */
+  let s = parseFloat(value.toPrecision(Math.max(1, p))).toString();
 
   if (thousands && !s.includes('e')) {
     const neg = s.startsWith('-');

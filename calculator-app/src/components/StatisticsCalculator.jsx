@@ -73,8 +73,10 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
   const Seg = ({ id, label, Icon }) => (
     <button
       onClick={() => { feedback('toggle'); setTab(id); }}
-      className={`flex-1 flex items-center justify-center ${tab === id ? `${theme.accentBg} text-white` : `${theme.chipBg} ${theme.mutedText}`}`}
-      style={{ gap: px(5), borderRadius: px(9), height: px(34), fontSize: px(12), fontWeight: 700 }}
+      className={`flex-1 flex items-center justify-center transition-transform active:scale-95 ${
+        tab === id ? `${theme.accentBg} ${theme.accentText}` : `${theme.chipBg} ${theme.mutedText}`
+      }`}
+      style={{ gap: px(5), borderRadius: px(10), height: px(34), fontSize: px(11.5), fontWeight: 700 }}
     >
       <Icon size={ico(scale, 13)} />
       {label}
@@ -82,18 +84,20 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
   );
 
   const Card = ({ label, value, accent }) => (
-    <div
-      className={`${theme.panelBg} border ${accent ? theme.accentSoft : theme.panelBorder}`}
-      style={{ borderRadius: px(10), padding: px(9) }}
-    >
-      <div className="flex items-start justify-between">
+    <div className={`${theme.panelBg}`} style={{ borderRadius: px(12), padding: px(10) }}>
+      <div className="flex items-start justify-between" style={{ gap: px(6) }}>
         <span className={`${theme.mutedText} truncate`} style={{ fontSize: px(10) }}>{label}</span>
-        <button onClick={() => copyVal(label, value)} className={theme.mutedText}>
+        <button
+          onClick={() => copyVal(label, value)}
+          aria-label={`Copy ${label}`}
+          className={`${theme.mutedText} shrink-0 active:scale-90`}
+          style={{ marginTop: px(-2) }}
+        >
           {copied === label ? <Check size={ico(scale, 12)} /> : <Copy size={ico(scale, 12)} />}
         </button>
       </div>
       <div
-        className={`font-bold truncate ${accent ? theme.accent : theme.bodyText}`}
+        className={`font-semibold truncate ${accent ? theme.accent : theme.bodyText}`}
         style={{ fontSize: px(15), marginTop: px(5), fontVariantNumeric: 'tabular-nums' }}
       >
         {value}
@@ -103,35 +107,32 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
 
   const Field = ({ label, value, onChange, placeholder }) => (
     <label className="block">
-      <span className={theme.mutedText} style={{ fontSize: px(9.5), fontWeight: 700 }}>{label}</span>
+      <span className={`${theme.mutedText}`} style={{ fontSize: px(9.5), fontWeight: 700, letterSpacing: px(0.3) }}>{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`w-full border outline-none ${theme.inputBg}`}
-        style={{ borderRadius: px(8), padding: `${px(7)} ${px(9)}`, fontSize: px(12), marginTop: px(3) }}
+        style={{ borderRadius: px(10), padding: `${px(8)} ${px(10)}`, fontSize: px(12.5), marginTop: px(4) }}
       />
     </label>
   );
 
   return (
-    <div className="h-full flex flex-col overflow-hidden" style={{ paddingLeft: px(8.4), paddingRight: px(8.4) }}>
+    <div className="h-full flex flex-col overflow-hidden" style={{ paddingLeft: px(12), paddingRight: px(12) }}>
       <div
-        className={`shrink-0 flex ${theme.panelBg} border ${theme.panelBorder}`}
-        style={{ gap: px(4), borderRadius: px(11), padding: px(4), marginTop: px(4) }}
+        className={`shrink-0 flex ${theme.panelBg}`}
+        style={{ gap: px(4), borderRadius: px(12), padding: px(4), marginTop: px(6) }}
       >
         <Seg id="one" label="1-Var Stats" Icon={BarChart3} />
         <Seg id="reg" label="Regression" Icon={TrendingUp} />
         <Seg id="prob" label="Probability" Icon={Shuffle} />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scroll" style={{ paddingTop: px(8), paddingBottom: px(12) }}>
+      <div className="flex-1 min-h-0 overflow-y-auto thin-scroll" style={{ paddingTop: px(10), paddingBottom: px(14) }}>
         {tab === 'one' && (
           <>
-            <div
-              className={`${theme.panelBg} border ${theme.panelBorder}`}
-              style={{ borderRadius: px(11), padding: px(9), marginBottom: px(8) }}
-            >
+            <div className={`${theme.panelBg}`} style={{ borderRadius: px(14), padding: px(11), marginBottom: px(10) }}>
               <div className="flex" style={{ gap: px(7) }}>
                 <input
                   ref={inputRef}
@@ -141,26 +142,26 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
                   placeholder="Numbers: 15, 24, 30..."
                   inputMode="decimal"
                   className={`flex-1 min-w-0 border outline-none ${theme.inputBg}`}
-                  style={{ borderRadius: px(9), padding: `${px(8)} ${px(11)}`, fontSize: px(13) }}
+                  style={{ borderRadius: px(10), padding: `${px(9)} ${px(11)}`, fontSize: px(13) }}
                 />
                 <button
                   onClick={addDraft}
-                  className={`${theme.accentBg} text-white flex items-center shrink-0 active:scale-95`}
-                  style={{ gap: px(4), borderRadius: px(9), padding: `0 ${px(13)}`, fontSize: px(13), fontWeight: 700 }}
+                  className={`${theme.accentBg} ${theme.accentText} flex items-center shrink-0 active:scale-95`}
+                  style={{ gap: px(4), borderRadius: px(10), padding: `0 ${px(13)}`, fontSize: px(13), fontWeight: 700 }}
                 >
                   <Plus size={ico(scale, 14)} /> Add
                 </button>
               </div>
 
-              <div className="flex items-center justify-between" style={{ marginTop: px(8) }}>
-                <div className="flex items-center min-w-0" style={{ gap: px(6) }}>
-                  <span className={theme.mutedText} style={{ fontSize: px(11) }}>Presets:</span>
+              <div className="flex items-center justify-between" style={{ marginTop: px(9) }}>
+                <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar" style={{ gap: px(6) }}>
+                  <span className={`${theme.mutedText} shrink-0`} style={{ fontSize: px(11) }}>Presets</span>
                   {DATASET_PRESETS.slice(0, 2).map((p) => (
                     <button
                       key={p.name}
                       onClick={() => loadPreset(p)}
                       className={`${theme.chipBg} ${theme.chipText} shrink-0`}
-                      style={{ borderRadius: px(6), padding: `${px(3)} ${px(8)}`, fontSize: px(11), fontWeight: 600 }}
+                      style={{ borderRadius: px(8), padding: `${px(4)} ${px(9)}`, fontSize: px(11), fontWeight: 600 }}
                     >
                       {p.name}
                     </button>
@@ -168,23 +169,25 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
                 </div>
                 <button
                   onClick={clearAll}
-                  className="flex items-center shrink-0 text-rose-400"
-                  style={{ gap: px(4), fontSize: px(11), fontWeight: 600 }}
+                  className={`${theme.chipBg} flex items-center shrink-0 active:scale-95`}
+                  style={{ gap: px(4), borderRadius: px(8), padding: `${px(4)} ${px(8)}`, fontSize: px(10.5), fontWeight: 600 }}
                 >
-                  <Trash2 size={ico(scale, 12)} /> Clear ({values.length})
+                  <Trash2 size={ico(scale, 12)} className="text-rose-400" />
+                  {values.length}
                 </button>
               </div>
 
               {values.length > 0 && (
-                <div className="flex flex-wrap" style={{ gap: px(5), marginTop: px(8) }}>
+                <div className="flex flex-wrap" style={{ gap: px(5), marginTop: px(9) }}>
                   {values.map((v, i) => (
                     <button
                       key={`${v}-${i}`}
                       onClick={() => removeAt(i)}
+                      aria-label={`Remove ${v}`}
                       className={`${theme.chipBg} ${theme.chipText} flex items-center`}
-                      style={{ gap: px(5), borderRadius: px(7), padding: `${px(4)} ${px(8)}`, fontSize: px(12), fontWeight: 600 }}
+                      style={{ gap: px(5), borderRadius: px(8), padding: `${px(4)} ${px(8)}`, fontSize: px(12), fontWeight: 600 }}
                     >
-                      {v}<span className={theme.mutedText} style={{ fontSize: px(11) }}>×</span>
+                      {v}<span className={`${theme.mutedText}`} style={{ fontSize: px(11) }}>×</span>
                     </button>
                   ))}
                 </div>
@@ -192,7 +195,7 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
             </div>
 
             {stats ? (
-              <div className="grid grid-cols-2" style={{ gap: px(7) }}>
+              <div className="grid grid-cols-2" style={{ gap: px(8) }}>
                 <Card label="Count (n)" value={f(stats.n)} />
                 <Card label="Sum (Σx)" value={f(stats.sum)} />
                 <Card label="Mean (x̄)" value={f(stats.mean)} accent />
@@ -225,28 +228,25 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
         )}
 
         {tab === 'reg' && (
-          <div style={{ display: 'grid', gap: px(8) }}>
-            <div
-              className={`${theme.panelBg} border ${theme.panelBorder}`}
-              style={{ borderRadius: px(11), padding: px(9), display: 'grid', gap: px(7) }}
-            >
+          <div style={{ display: 'grid', gap: px(9) }}>
+            <div className={`${theme.panelBg}`} style={{ borderRadius: px(14), padding: px(11), display: 'grid', gap: px(8) }}>
               <Field label="X VALUES" value={xRaw} onChange={setXRaw} placeholder="1, 2, 3..." />
               <Field label="Y VALUES" value={yRaw} onChange={setYRaw} placeholder="2, 4, 6..." />
             </div>
 
             {reg ? (
               <>
-                <div className={`${theme.accentSoft} border`} style={{ borderRadius: px(11), padding: px(11) }}>
-                  <div className={theme.mutedText} style={{ fontSize: px(10), fontWeight: 700 }}>REGRESSION LINE</div>
+                <div className={`${theme.accentSoft} border`} style={{ borderRadius: px(14), padding: px(13) }}>
+                  <div className={`${theme.mutedText}`} style={{ fontSize: px(9.5), fontWeight: 700, letterSpacing: px(0.4) }}>REGRESSION LINE</div>
                   <div
-                    className={`${theme.accent} font-bold`}
-                    style={{ fontSize: px(17), marginTop: px(4), fontVariantNumeric: 'tabular-nums' }}
+                    className={`${theme.accent} font-semibold`}
+                    style={{ fontSize: px(17), marginTop: px(5), fontVariantNumeric: 'tabular-nums' }}
                   >
                     ŷ = {f(reg.slope)}x {reg.intercept >= 0 ? '+' : '−'} {f(Math.abs(reg.intercept))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2" style={{ gap: px(7) }}>
+                <div className="grid grid-cols-2" style={{ gap: px(8) }}>
                   <Card label="Slope (m)" value={f(reg.slope)} accent />
                   <Card label="Intercept (b)" value={f(reg.intercept)} />
                   <Card label="Correlation r" value={f(reg.r)} accent />
@@ -257,11 +257,11 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
                   <Card label="SSE" value={f(reg.sse)} />
                 </div>
 
-                <div className={`${theme.panelBg} border ${theme.panelBorder}`} style={{ borderRadius: px(11), padding: px(9) }}>
+                <div className={`${theme.panelBg}`} style={{ borderRadius: px(14), padding: px(11) }}>
                   <Field label="PREDICT FOR X" value={predictX} onChange={setPredictX} placeholder="9" />
                   <div
-                    className={`${theme.accent} font-bold`}
-                    style={{ fontSize: px(16), marginTop: px(7), fontVariantNumeric: 'tabular-nums' }}
+                    className={`${theme.accent} font-semibold`}
+                    style={{ fontSize: px(16), marginTop: px(8), fontVariantNumeric: 'tabular-nums' }}
                   >
                     ŷ = {f(reg.predict(Number(predictX)))}
                   </div>
@@ -276,31 +276,31 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
         )}
 
         {tab === 'prob' && (
-          <div style={{ display: 'grid', gap: px(8) }}>
-            <div className={`${theme.panelBg} border ${theme.panelBorder}`} style={{ borderRadius: px(11), padding: px(9) }}>
-              <div className={theme.mutedText} style={{ fontSize: px(10), fontWeight: 700, marginBottom: px(7) }}>
+          <div style={{ display: 'grid', gap: px(9) }}>
+            <div className={`${theme.panelBg}`} style={{ borderRadius: px(14), padding: px(11) }}>
+              <div className={`${theme.mutedText}`} style={{ fontSize: px(9.5), fontWeight: 700, letterSpacing: px(0.4), marginBottom: px(8) }}>
                 COMBINATORICS
               </div>
-              <div className="grid grid-cols-2" style={{ gap: px(7) }}>
+              <div className="grid grid-cols-2" style={{ gap: px(8) }}>
                 <Field label="n" value={nVal} onChange={setNVal} placeholder="10" />
                 <Field label="r" value={rVal} onChange={setRVal} placeholder="3" />
               </div>
-              <div className="grid grid-cols-3" style={{ gap: px(7), marginTop: px(8) }}>
+              <div className="grid grid-cols-3" style={{ gap: px(7), marginTop: px(9) }}>
                 <Card label="nCr" value={f(combo.nCr)} accent />
                 <Card label="nPr" value={f(combo.nPr)} accent />
                 <Card label="n!" value={f(combo.fact)} />
               </div>
             </div>
 
-            <div className={`${theme.panelBg} border ${theme.panelBorder}`} style={{ borderRadius: px(11), padding: px(9) }}>
-              <div className={theme.mutedText} style={{ fontSize: px(10), fontWeight: 700, marginBottom: px(7) }}>
+            <div className={`${theme.panelBg}`} style={{ borderRadius: px(14), padding: px(11) }}>
+              <div className={`${theme.mutedText}`} style={{ fontSize: px(9.5), fontWeight: 700, letterSpacing: px(0.4), marginBottom: px(8) }}>
                 RANDOM GENERATORS
               </div>
-              <div className="grid grid-cols-2" style={{ gap: px(7) }}>
+              <div className="grid grid-cols-2" style={{ gap: px(8) }}>
                 <Field label="MIN" value={randMin} onChange={setRandMin} placeholder="1" />
                 <Field label="MAX" value={randMax} onChange={setRandMax} placeholder="100" />
               </div>
-              <div className="grid grid-cols-4" style={{ gap: px(6), marginTop: px(8) }}>
+              <div className="grid grid-cols-4" style={{ gap: px(6), marginTop: px(9) }}>
                 <RandBtn theme={theme} scale={scale} Icon={Shuffle} label="Int"
                   onClick={() => { feedback('key'); setRandOut(String(randomGen.int(Number(randMin), Number(randMax)))); }} />
                 <RandBtn theme={theme} scale={scale} Icon={Shuffle} label="Float"
@@ -310,8 +310,8 @@ export default function StatisticsCalculator({ theme, settings, addHistory, feed
                 <RandBtn theme={theme} scale={scale} Icon={Dices} label="Dice"
                   onClick={() => { feedback('key'); setRandOut(String(randomGen.dice())); }} />
               </div>
-              <div className={`${theme.accentSoft} border text-center`} style={{ borderRadius: px(9), padding: px(10), marginTop: px(8) }}>
-                <span className={`${theme.accent} font-bold`} style={{ fontSize: px(20), fontVariantNumeric: 'tabular-nums' }}>
+              <div className={`${theme.accentSoft} border text-center`} style={{ borderRadius: px(12), padding: px(12), marginTop: px(9) }}>
+                <span className={`${theme.accent} font-semibold`} style={{ fontSize: px(20), fontVariantNumeric: 'tabular-nums' }}>
                   {randOut}
                 </span>
               </div>
@@ -328,7 +328,7 @@ function RandBtn({ theme, scale, Icon, label, onClick }) {
     <button
       onClick={onClick}
       className={`${theme.chipBg} ${theme.chipText} flex flex-col items-center justify-center active:scale-95`}
-      style={{ gap: px(3), borderRadius: px(8), padding: `${px(8)} 0`, fontSize: px(11), fontWeight: 600 }}
+      style={{ gap: px(3), borderRadius: px(10), padding: `${px(9)} 0`, fontSize: px(11), fontWeight: 600 }}
     >
       <Icon size={ico(scale, 14)} />
       {label}

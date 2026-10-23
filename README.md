@@ -13,15 +13,20 @@ APK that stays under 200 KB.
 
 | Mode | What it does |
 | --- | --- |
-| **Simple** | Four-function keypad with circular keys, percent, sign toggle |
+| **Simple** | Four-function keypad, editable expression with a movable caret, percent, sign toggle, paper tape of recent results |
 | **Scientific** | SHIFT function swap, DEG/RAD/GRAD, 6 memory banks, factorial, nCr/nPr, logs, powers, roots |
 | **Programmer** | HEX/DEC/OCT/BIN readout, BigInt ALU, bitwise ops, shifts/rotates, interactive 64-bit bitboard, BYTE→QWORD word sizes, signed/unsigned |
 | **Statistics** | 18 summary metrics, OLS linear regression with prediction, combinatorics, random generators, dataset presets |
 | **Converter** | 12 categories (length, mass, temperature, area, volume, speed, time, data, pressure, energy, power, angle) |
 | **Date & Time** | Date difference, add/subtract intervals, business days, age calculation, month calendar |
 
-Shared across every mode: calculation history, memory banks, five themes,
-configurable precision and notation, sound profiles, and haptics.
+Shared across every mode: calculation history, memory banks, five themes
+(Midnight, Slate, Neon OLED, Terminal, Daylight), configurable precision and
+notation, sound profiles, and haptics.
+
+The interface follows a flat, minimal iOS-inspired system: no device frames,
+no bevels, no scanlines — one accent colour per theme, hairline-free cards,
+rounded keycaps and a right-aligned readout that scales with the number.
 
 ---
 

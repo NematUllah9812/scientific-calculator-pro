@@ -154,3 +154,63 @@ development key; anyone rebuilding should generate their own (see the README).
 
 Because the signing identity is stable across rebuilds, a new APK installs as
 an upgrade over a previously sideloaded copy rather than requiring an uninstall.
+
+---
+
+## 6. UI overhaul (v3.1)
+
+The interface was rebuilt from the ground up: the old skin read as a physical
+Casio (raised LCD frame, scanlines, bevelled keycaps, rainbow accents) and the
+layout had drifted into dead space and truncated values.
+
+### Design system
+
+- **Frameless display.** No bezel, no scanlines, no glow. The result sits on
+  the page background, right-aligned, and steps its size down as the number
+  grows.
+- **One accent per theme.** Operators, the active tab and the live result all
+  share a single accent colour. Five profiles: Midnight, Slate, Neon OLED,
+  Terminal, Daylight.
+- **Glass keycaps.** Keycaps are frosted panes rather than solid blocks: a
+  translucent base colour, a top-lit gradient, a hairline edge, an inner
+  highlight and a soft drop shadow. The tint is theme-driven through
+  `--glass-*` custom properties (`src/index.css`), so one `.glass` class
+  covers every profile.
+- **Press feedback.** Every key scales to 94 %, dims its inner shadow and
+  emits a ripple that spreads from the touch point (`src/utils/ripple.js`).
+  Hardware haptics and the synthesised click remain in place.
+- **iOS-style bottom sheets** for History, Memory and Settings, with a
+  grabber, a blurred backdrop and a drag-free confirm step for destructive
+  actions.
+
+### Layout
+
+Every mode now uses the same skeleton: a fixed-height keypad at the bottom, a
+readout anchored above it, and a paper tape that fills the space in between
+with the last results. Tapping a tape row recalls that value.
+
+### Scientific mode
+
+The display was enlarged (result up to 64 px, formula up to 18 px) and given
+the same caret editing the Simple mode has: tap the formula to place the
+caret, `‹` / `›` to walk it, `⌫` to delete before it, arrow keys on a
+hardware keyboard. The live preview follows the caret, so an expression can be
+corrected in the middle instead of being retyped.
+
+### Bugs fixed along the way
+
+- Notation ids disagreed between the engine and the UI (`sci` vs `scientific`),
+  so switching to SCI/ENG silently produced standard output.
+- The Programmer ALU ignored `SHL`/`SHR`/`SAR`/`MOD` (different op names) and
+  mixed signed/unsigned division and modulo.
+- `formatResult` was off by one significant digit; scientific notation printed
+  `5.0000000000e+2`.
+- The Scientific display kept showing the last result after `CE`.
+- The converter's `00` key and its digit entry used a stale closure.
+- The converter truncated long results.
+- Recalling a formatted value from history inserted thousands separators into
+  the expression (`1,234,000` → tokenizer error).
+- Typing in the History search box leaked into the calculator.
+- The Date calendar did not wrap from December to January.
+- `color-scheme` was hard-coded to dark, so native inputs and scrollbars kept
+  the dark palette in the Daylight theme.
