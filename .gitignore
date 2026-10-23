@@ -49,3 +49,6 @@ dist/
 # ---------------------------------------------------------------------------
 .work/
 tmp/
+
+# Offline APK build toolchain (aapt2, JDK, android.jar)
+.apktools/
