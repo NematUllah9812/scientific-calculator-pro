@@ -388,6 +388,7 @@ export default function SimpleCalculator({
           gap: px(12),
           gridTemplateRows: 'repeat(5, 1fr)',
           height: px(488),
+          marginTop: px(26),
         }}
       >
         <K cls={theme.clearKey} onClick={clearAll} fs={21} label="Clear">AC</K>

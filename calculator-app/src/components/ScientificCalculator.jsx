@@ -387,7 +387,7 @@ export default function ScientificCalculator({
       </div>
 
       {/* ================= Memory row ================= */}
-      <div className="shrink-0 grid grid-cols-6" style={{ gap: px(5), marginTop: px(8) }}>
+      <div className="shrink-0 grid grid-cols-6" style={{ gap: px(5), marginTop: px(20) }}>
         <MemBtn label="MC" onClick={memClear} />
         <MemBtn label="MR" onClick={memRecall} />
         <MemBtn label="M+" onClick={() => memAdd(1)} />
@@ -403,7 +403,7 @@ export default function ScientificCalculator({
         className="shrink-0 grid grid-cols-5"
         style={{
           gap: px(7),
-          marginTop: px(8),
+          marginTop: px(12),
           height: px(566),
           gridTemplateRows: 'repeat(4, 1fr) repeat(4, 1.12fr)',
         }}
