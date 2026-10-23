@@ -409,35 +409,35 @@ export default function ScientificCalculator({
         }}
       >
         {/* Row 1 */}
-        <K label="SHIFT" cls={shift ? theme.badge2nd : theme.funcKey} fs={11}
+        <K label="SHIFT" cls={shift ? theme.badge2nd : theme.sciKey} fs={11}
            onClick={() => { feedback('toggle'); setShift((s) => !s); }} />
-        <K label="hyp" cls={hyp ? theme.badgeHyp : theme.funcKey} fs={13}
+        <K label="hyp" cls={hyp ? theme.badgeHyp : theme.sciKey} fs={13}
            onClick={() => { feedback('toggle'); setHyp((h) => !h); }} />
-        <K label={trigLabel('sin')} alt={trigAlt('sin')} cls={theme.funcKey} onClick={() => press(trig('sin'))} />
-        <K label={trigLabel('cos')} alt={trigAlt('cos')} cls={theme.funcKey} onClick={() => press(trig('cos'))} />
-        <K label={trigLabel('tan')} alt={trigAlt('tan')} cls={theme.funcKey} onClick={() => press(trig('tan'))} />
+        <K label={trigLabel('sin')} alt={trigAlt('sin')} cls={theme.sciKey} onClick={() => press(trig('sin'))} />
+        <K label={trigLabel('cos')} alt={trigAlt('cos')} cls={theme.sciKey} onClick={() => press(trig('cos'))} />
+        <K label={trigLabel('tan')} alt={trigAlt('tan')} cls={theme.sciKey} onClick={() => press(trig('tan'))} />
 
         {/* Row 2 */}
-        <K label="√x" alt="³√x" cls={theme.funcKey} onClick={() => press(shift ? 'cbrt(' : 'sqrt(')} />
-        <K label="xʸ" alt="ʸ√x" cls={theme.funcKey} onClick={() => press(shift ? 'root(' : '^')} />
-        <K label="x²" alt="x³" cls={theme.funcKey} onClick={() => press(shift ? '^3' : '^2')} />
-        <K label="log" alt="10ˣ" cls={theme.funcKey} onClick={() => press(shift ? '10^' : 'log(')} />
-        <K label="ln" alt="eˣ" cls={theme.funcKey} onClick={() => press(shift ? 'exp(' : 'ln(')} />
+        <K label="√x" alt="³√x" cls={theme.sciKey} onClick={() => press(shift ? 'cbrt(' : 'sqrt(')} />
+        <K label="xʸ" alt="ʸ√x" cls={theme.sciKey} onClick={() => press(shift ? 'root(' : '^')} />
+        <K label="x²" alt="x³" cls={theme.sciKey} onClick={() => press(shift ? '^3' : '^2')} />
+        <K label="log" alt="10ˣ" cls={theme.sciKey} onClick={() => press(shift ? '10^' : 'log(')} />
+        <K label="ln" alt="eˣ" cls={theme.sciKey} onClick={() => press(shift ? 'exp(' : 'ln(')} />
 
         {/* Row 3 */}
-        <K label="1/x" alt="|x|" cls={theme.funcKey} onClick={() => press(shift ? 'abs(' : 'inv(')} />
-        <K label="x!" alt="mod" cls={theme.funcKey} onClick={() => press(shift ? 'mod(' : '!')} />
-        <K label="π" alt="φ" cls={theme.funcKey} fs={16} onClick={() => press(shift ? 'φ' : 'π')} />
-        <K label="e" alt="RND" cls={theme.funcKey} fs={16} onClick={() => press(shift ? 'rand()' : 'e')} />
-        <K label={shift ? 'nPr' : 'nCr'} alt={shift ? 'nCr' : 'nPr'} cls={theme.funcKey} accent
+        <K label="1/x" alt="|x|" cls={theme.sciKey} onClick={() => press(shift ? 'abs(' : 'inv(')} />
+        <K label="x!" alt="mod" cls={theme.sciKey} onClick={() => press(shift ? 'mod(' : '!')} />
+        <K label="π" alt="φ" cls={theme.sciKey} fs={16} onClick={() => press(shift ? 'φ' : 'π')} />
+        <K label="e" alt="RND" cls={theme.sciKey} fs={16} onClick={() => press(shift ? 'rand()' : 'e')} />
+        <K label={shift ? 'nPr' : 'nCr'} alt={shift ? 'nCr' : 'nPr'} cls={theme.sciKey} accent
            onClick={() => press(shift ? 'nPr(' : 'nCr(')} />
 
         {/* Row 4 */}
         <K label="AC" cls={theme.clearKey} fs={14} onClick={clearAll} />
         <K label="CE" cls={theme.ceKey} fs={14} onClick={clearEntry} />
-        <K label={<Delete size={ico(scale, 18)} />} cls={theme.funcKey} onClick={backspace} />
-        <K label="(" cls={theme.funcKey} fs={17} onClick={() => press('(')} />
-        <K label=")" cls={theme.funcKey} fs={17} onClick={() => press(')')} />
+        <K label={<Delete size={ico(scale, 18)} />} cls={theme.ceKey} onClick={backspace} />
+        <K label="(" cls={theme.ceKey} fs={17} onClick={() => press('(')} />
+        <K label=")" cls={theme.ceKey} fs={17} onClick={() => press(')')} />
 
         {/* Row 5 */}
         <K label="7" cls={theme.numKey} fs={20} onClick={() => press('7')} />

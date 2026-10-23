@@ -218,14 +218,14 @@ export default function SimpleCalculator({
     else if (k === 'End') setCaret(expr.length);
   });
 
-  /* Flat keycap — a frosted glass pane with a tap ripple. */
+  /* Round keycap — a full circle of frosted glass with a tap ripple. */
   const K = ({ children, cls, onClick, fs = 26, label, style }) => (
     <button
       onClick={onClick}
       onPointerDown={ripple}
       aria-label={label}
       className={`${cls} flex items-center justify-center font-medium select-none outline-none`}
-      style={{ fontSize: px(fs), borderRadius: px(22), ...style }}
+      style={{ fontSize: px(fs), borderRadius: '50%', ...style }}
     >
       {children}
     </button>
@@ -381,12 +381,13 @@ export default function SimpleCalculator({
       </div>
 
       {/* ================= Keypad ================= */}
+      {/* The grid cells are square so every key is a true circle. */}
       <div
         className="shrink-0 grid grid-cols-4"
         style={{
           gap: px(12),
           gridTemplateRows: 'repeat(5, 1fr)',
-          height: px(524),
+          height: px(488),
         }}
       >
         <K cls={theme.clearKey} onClick={clearAll} fs={21} label="Clear">AC</K>

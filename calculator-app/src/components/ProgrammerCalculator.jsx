@@ -136,7 +136,7 @@ export default function ProgrammerCalculator({ theme, addHistory, feedback, scal
     </button>
   );
 
-  const logicCls = `${theme.funcKey} ${theme.accent}`;
+  const logicCls = `${theme.sciKey} ${theme.accent}`;
 
   /* Bit rows: 16 bits per row, most-significant nibble first. */
   const bitRows = [];

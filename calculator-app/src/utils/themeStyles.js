@@ -27,7 +27,7 @@ export const THEME_PROFILES = {
     id: 'dark',
     name: 'Midnight',
 
-    appBg: 'bg-[#000000] glass-dark',
+    appBg: 'bg-[#000000] glass-dark accent-amber',
     headerBg: 'bg-[#000000]',
     panelBg: 'bg-[#1c1c1e]',
     panelAlt: 'bg-[#2c2c2e]',
@@ -53,12 +53,13 @@ export const THEME_PROFILES = {
     badgeMem: 'bg-[#ff375f] text-white border-[#ff375f]',
 
     /* Keys */
-    funcKey: 'bg-white/[0.12] text-[#ffffff] glass',
+    funcKey: 'bg-white/[0.10] text-[#ffffff] glass',
+    sciKey: 'bg-white/[0.15] text-[#ffffff] glass glass-sci',
     funcAltLabel: 'text-[#ff9f0a]',
-    numKey: 'bg-white/[0.07] text-[#ffffff] glass',
+    numKey: 'bg-white/[0.05] text-[#ffffff] glass',
     opKey: 'bg-[#ff9f0a] text-black glass glass-accent',
-    clearKey: 'bg-white/[0.12] text-[#ff9f0a] glass',
-    ceKey: 'bg-white/[0.12] text-[#ffffff] glass',
+    clearKey: 'bg-white/[0.13] text-[#ff9f0a] glass',
+    ceKey: 'bg-white/[0.13] text-[#ffffff] glass',
     equalKey: 'bg-[#ff9f0a] text-black glass glass-accent',
 
     /* Chips / tabs / segments */
@@ -89,7 +90,7 @@ export const THEME_PROFILES = {
     id: 'casio',
     name: 'Slate',
 
-    appBg: 'bg-[#0f1219] glass-dark',
+    appBg: 'bg-[#0f1219] glass-dark accent-blue',
     headerBg: 'bg-[#0f1219]',
     panelBg: 'bg-[#181d27]',
     panelAlt: 'bg-[#232a37]',
@@ -113,12 +114,13 @@ export const THEME_PROFILES = {
     badgeHyp: 'bg-[#5e5ce6] text-white border-[#5e5ce6]',
     badgeMem: 'bg-[#ff375f] text-white border-[#ff375f]',
 
-    funcKey: 'bg-white/[0.11] text-[#f3f6fb] glass',
+    funcKey: 'bg-white/[0.09] text-[#f3f6fb] glass',
+    sciKey: 'bg-white/[0.14] text-[#f3f6fb] glass glass-sci',
     funcAltLabel: 'text-[#0a84ff]',
-    numKey: 'bg-white/[0.06] text-[#f3f6fb] glass',
+    numKey: 'bg-white/[0.05] text-[#f3f6fb] glass',
     opKey: 'bg-[#0a84ff] text-white glass glass-accent',
-    clearKey: 'bg-white/[0.11] text-[#0a84ff] glass',
-    ceKey: 'bg-white/[0.11] text-[#f3f6fb] glass',
+    clearKey: 'bg-white/[0.12] text-[#0a84ff] glass',
+    ceKey: 'bg-white/[0.12] text-[#f3f6fb] glass',
     equalKey: 'bg-[#0a84ff] text-white glass glass-accent',
 
     chipBg: 'bg-[#232a37]',
@@ -148,7 +150,7 @@ export const THEME_PROFILES = {
     id: 'neon',
     name: 'Neon OLED',
 
-    appBg: 'bg-[#04060c] glass-dark',
+    appBg: 'bg-[#04060c] glass-dark accent-cyan',
     headerBg: 'bg-[#04060c]',
     panelBg: 'bg-[#0a0f1c]',
     panelAlt: 'bg-[#141c30]',
@@ -172,12 +174,13 @@ export const THEME_PROFILES = {
     badgeHyp: 'bg-[#a855f7] text-white border-[#a855f7]',
     badgeMem: 'bg-[#f43f5e] text-white border-[#f43f5e]',
 
-    funcKey: 'bg-white/[0.11] text-[#e2ecff] glass',
+    funcKey: 'bg-white/[0.09] text-[#e2ecff] glass',
+    sciKey: 'bg-white/[0.14] text-[#e2ecff] glass glass-sci',
     funcAltLabel: 'text-[#22d3ee]',
-    numKey: 'bg-white/[0.06] text-[#e2ecff] glass',
+    numKey: 'bg-white/[0.05] text-[#e2ecff] glass',
     opKey: 'bg-[#22d3ee] text-black glass glass-accent',
-    clearKey: 'bg-white/[0.11] text-[#22d3ee] glass',
-    ceKey: 'bg-white/[0.11] text-[#e2ecff] glass',
+    clearKey: 'bg-white/[0.12] text-[#22d3ee] glass',
+    ceKey: 'bg-white/[0.12] text-[#e2ecff] glass',
     equalKey: 'bg-[#22d3ee] text-black glass glass-accent',
 
     chipBg: 'bg-[#141c30]',
@@ -207,7 +210,7 @@ export const THEME_PROFILES = {
     id: 'retro',
     name: 'Terminal',
 
-    appBg: 'bg-[#030b06] glass-dark',
+    appBg: 'bg-[#030b06] glass-dark accent-green',
     headerBg: 'bg-[#030b06]',
     panelBg: 'bg-[#07150c]',
     panelAlt: 'bg-[#0d2213]',
@@ -231,12 +234,13 @@ export const THEME_PROFILES = {
     badgeHyp: 'bg-[#22c55e] text-black border-[#22c55e]',
     badgeMem: 'bg-[#a3e635] text-black border-[#a3e635]',
 
-    funcKey: 'bg-white/[0.10] text-[#d7ffe4] glass',
+    funcKey: 'bg-white/[0.08] text-[#d7ffe4] glass',
+    sciKey: 'bg-white/[0.13] text-[#d7ffe4] glass glass-sci',
     funcAltLabel: 'text-[#facc15]',
-    numKey: 'bg-white/[0.05] text-[#d7ffe4] glass',
+    numKey: 'bg-white/[0.04] text-[#d7ffe4] glass',
     opKey: 'bg-[#4ade80] text-black glass glass-accent',
-    clearKey: 'bg-white/[0.10] text-[#4ade80] glass',
-    ceKey: 'bg-white/[0.10] text-[#d7ffe4] glass',
+    clearKey: 'bg-white/[0.11] text-[#4ade80] glass',
+    ceKey: 'bg-white/[0.11] text-[#d7ffe4] glass',
     equalKey: 'bg-[#4ade80] text-black glass glass-accent',
 
     chipBg: 'bg-[#0d2213]',
@@ -266,7 +270,7 @@ export const THEME_PROFILES = {
     id: 'light',
     name: 'Daylight',
 
-    appBg: 'bg-[#f2f2f7] glass-light',
+    appBg: 'bg-[#f2f2f7] glass-light accent-tangerine',
     headerBg: 'bg-[#f2f2f7]',
     panelBg: 'bg-[#ffffff]',
     panelAlt: 'bg-[#e7e7ec]',
@@ -290,12 +294,13 @@ export const THEME_PROFILES = {
     badgeHyp: 'bg-[#5856d6] text-white border-[#5856d6]',
     badgeMem: 'bg-[#ff2d55] text-white border-[#ff2d55]',
 
-    funcKey: 'bg-black/[0.07] text-[#000000] glass',
+    funcKey: 'bg-black/[0.06] text-[#000000] glass',
+    sciKey: 'bg-white/[0.75] text-[#000000] glass glass-sci',
     funcAltLabel: 'text-[#ff9500]',
-    numKey: 'bg-white/[0.92] text-[#000000] glass',
+    numKey: 'bg-white/[0.82] text-[#000000] glass',
     opKey: 'bg-[#ff9500] text-white glass glass-accent',
-    clearKey: 'bg-black/[0.07] text-[#ff9500] glass',
-    ceKey: 'bg-black/[0.07] text-[#000000] glass',
+    clearKey: 'bg-black/[0.09] text-[#ff9500] glass',
+    ceKey: 'bg-black/[0.09] text-[#000000] glass',
     equalKey: 'bg-[#ff9500] text-white glass glass-accent',
 
     chipBg: 'bg-[#e7e7ec]',
