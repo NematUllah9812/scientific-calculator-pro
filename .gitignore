@@ -49,3 +49,6 @@ dist/
 # ---------------------------------------------------------------------------
 .work/
 tmp/
+
+# Motion explainer render output (frames + mp4)
+motion-explainer/out/
