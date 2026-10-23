@@ -410,8 +410,11 @@ export default function SimpleCalculator({
         <K cls={theme.numKey} onClick={() => inputDigit('3')}>3</K>
         <K cls={theme.opKey} onClick={() => handleOperator('+')} label="Add"><Plus size={ico(scale, 21)} /></K>
 
-        <K cls={theme.numKey} onClick={() => inputDigit('0')} style={{ gridColumn: 'span 2' }}>0</K>
+        {/* Every key is a circle, so the zero is a circle too — the slot the
+            wide key used to occupy is now the bracket key. */}
+        <K cls={theme.numKey} onClick={() => inputDigit('0')}>0</K>
         <K cls={theme.numKey} onClick={() => inputDigit('.')} fs={30} label="Decimal point">.</K>
+        <K cls={theme.funcKey} onClick={parens} label="Parentheses"><Parentheses size={ico(scale, 21)} /></K>
         <K cls={theme.equalKey} onClick={handleEquals} label="Equals"><Equal size={ico(scale, 23)} /></K>
       </div>
     </div>

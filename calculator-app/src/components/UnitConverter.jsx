@@ -15,6 +15,9 @@ export default function UnitConverter({
   const [from, setFrom] = useState(DEFAULT_UNITS.length?.[0] || 'm');
   const [to, setTo] = useState(DEFAULT_UNITS.length?.[1] || 'km');
   const [entry, setEntry] = useState('1');
+  /* The opening "1" is a placeholder that shows a meaningful conversion.
+     The first digit the user types replaces it instead of appending to it. */
+  const [dirty, setDirty] = useState(false);
   const [copied, setCopied] = useState(false);
   const [picker, setPicker] = useState(null); // 'from' | 'to' | null
 
@@ -22,6 +25,7 @@ export default function UnitConverter({
 
   useEffect(() => {
     if (recallValue !== null && recallValue !== undefined) {
+      setDirty(true);
       setEntry(String(recallValue).replace(/,/g, ''));
       clearRecall();
     }
@@ -64,7 +68,9 @@ export default function UnitConverter({
 
   const digit = (d) => {
     feedback('key');
+    setDirty(true);
     setEntry((e) => {
+      if (!dirty && d !== '.') return d;      // replace the placeholder
       if (d === '.' && e.includes('.')) return e;
       if (e === '0' && d !== '.') return d;
       if (e.replace(/[-.]/g, '').length >= 14) return e;
@@ -74,6 +80,7 @@ export default function UnitConverter({
 
   const backspace = () => {
     feedback('key');
+    setDirty(true);
     setEntry((e) => (e.length > 1 ? e.slice(0, -1) : '0'));
   };
 
@@ -81,6 +88,7 @@ export default function UnitConverter({
      lose one of them because both calls saw the same stale state). */
   const appendZeros = () => {
     feedback('key');
+    setDirty(true);
     setEntry((e) => {
       if (e.replace(/[-.]/g, '').length >= 13) return e;
       return e === '0' ? '00' : e + '00';
@@ -89,6 +97,7 @@ export default function UnitConverter({
 
   const toggleSign = () => {
     feedback('key');
+    setDirty(true);
     setEntry((e) => {
       if (e.startsWith('-')) return e.slice(1);
       return e === '0' ? '0' : '-' + e;
@@ -228,7 +237,7 @@ export default function UnitConverter({
         {tape.map((h) => (
           <button
             key={h.id}
-            onClick={() => { feedback('key'); setEntry(String(h.result).replace(/,/g, '')); }}
+            onClick={() => { feedback('key'); setDirty(true); setEntry(String(h.result).replace(/,/g, '')); }}
             className={`${theme.mutedText} text-right truncate active:opacity-60`}
             style={{ fontSize: px(11.5), fontVariantNumeric: 'tabular-nums', padding: `${px(2)} 0` }}
           >
@@ -248,7 +257,7 @@ export default function UnitConverter({
         <K label="4" cls={theme.numKey} onClick={() => digit('4')} />
         <K label="5" cls={theme.numKey} onClick={() => digit('5')} />
         <K label="6" cls={theme.numKey} onClick={() => digit('6')} />
-        <K label="C" cls={theme.clearKey} fs={17} onClick={() => { feedback('clear'); setEntry('0'); }} />
+        <K label="C" cls={theme.clearKey} fs={17} onClick={() => { feedback('clear'); setDirty(true); setEntry('0'); }} />
 
         <K label="1" cls={theme.numKey} onClick={() => digit('1')} />
         <K label="2" cls={theme.numKey} onClick={() => digit('2')} />
