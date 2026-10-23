@@ -110,32 +110,14 @@ export default function SimpleCalculator({
     setSettledExpr('');
   };
 
-  /* ± negates the number the caret sits in. */
-  const negate = () => {
-    feedback('key');
-    const left = expr.slice(0, caret);
-    const m = left.match(/(\d+\.?\d*)$/);
-    if (!m) {
-      // No number to the left of the caret — wrap the current selection.
-      insert('-');
-      return;
-    }
-    const start = caret - m[1].length;
-    const num = parseFloat(m[1]);
-    const rep = num < 0 ? String(Math.abs(num)) : '-' + m[1];
-    setExpr(expr.slice(0, start) + rep + expr.slice(caret));
-    setCaret(start + rep.length);
-    setSettled(false);
-    setSettledExpr('');
-  };
-
+  /* Delete one character before the caret, including in an evaluated result. */
   const backspace = () => {
     feedback('key');
-    if (settled) { setExpr(''); setCaret(0); setResult(''); setSettled(false); setSettledExpr(''); return; }
     if (caret === 0) return;
     setExpr(expr.slice(0, caret - 1) + expr.slice(caret));
     setCaret(caret - 1);
     setSettled(false);
+    setSettledExpr('');
   };
 
   const clearAll = () => {
@@ -320,6 +302,7 @@ export default function SimpleCalculator({
           {/* editable expression — tap anywhere to place the caret */}
           <div
             onPointerDown={placeCaret}
+            data-testid="simple-formula"
             className="text-right cursor-text break-words"
             style={{ minHeight: px(exprSize * 1.5) }}
           >
@@ -367,6 +350,7 @@ export default function SimpleCalculator({
           {/* live / settled result */}
           <div
             className={`text-right font-semibold truncate ${theme.lcdResult}`}
+            data-testid="simple-result"
             style={{
               fontSize: px(outSize),
               lineHeight: 1.05,
@@ -384,6 +368,7 @@ export default function SimpleCalculator({
       {/* The grid cells are square so every key is a true circle. */}
       <div
         className="shrink-0 grid grid-cols-4"
+        data-testid="simple-keypad"
         style={{
           gap: px(12),
           gridTemplateRows: 'repeat(5, 1fr)',
@@ -392,8 +377,8 @@ export default function SimpleCalculator({
         }}
       >
         <K cls={theme.clearKey} onClick={clearAll} fs={21} label="Clear">AC</K>
-        <K cls={theme.funcKey} onClick={negate} fs={24} label="Negate">±</K>
         <K cls={theme.funcKey} onClick={percent} label="Percent"><Percent size={ico(scale, 21)} /></K>
+        <K cls={theme.funcKey} onClick={backspace} label="Backspace"><Delete size={ico(scale, 22)} /></K>
         <K cls={theme.opKey} onClick={() => handleOperator('÷')} label="Divide"><Divide size={ico(scale, 22)} /></K>
 
         <K cls={theme.numKey} onClick={() => inputDigit('7')}>7</K>

@@ -91,8 +91,8 @@ step 5 "AAPT2 linking resources -> unaligned.apk"
   --java "$WORK/gen" \
   --min-sdk-version 21 \
   --target-sdk-version 34 \
-  --version-code 31 \
-  --version-name "3.1" \
+  --version-code 32 \
+  --version-name "3.1.1" \
   --auto-add-overlay \
   "$WORK/compiled_res.zip"
 

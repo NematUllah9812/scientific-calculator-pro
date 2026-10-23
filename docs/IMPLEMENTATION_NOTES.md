@@ -287,3 +287,32 @@ re-checked from `file://`.
 **Upgrade caveat:** the previous private signing key was unavailable. This
 sideload build therefore uses a new development key; Android may require
 uninstalling the old app first, which removes its stored settings/history.
+
+## 9. Simple backspace key (v3.1.1)
+
+- Removed the Simple keypad's ± sign-toggle button. The first row is now
+  **AC | % | ⌫ | ÷**, with backspace immediately left of division.
+- The new backspace uses the same circular glass keycap, ripple and key
+  feedback as the other function keys, with the accessible name `Backspace`.
+- Both on-screen and keyboard Backspace delete one character before the
+  current caret. After `=`, backspace edits the result one digit at a time
+  rather than clearing everything. `AC` remains the full reset.
+- Removed the unused Simple negation handler. Negative numbers can still be
+  entered with minus; the Scientific ± key is unchanged.
+- Added stable Simple formula/result/keypad test hooks. Twelve browser
+  checks pass on both the preview and the HTML extracted from the APK:
+  top-row order/adjacency and circular sizing, single-character/repeated
+  deletion, caret-middle edits and preservation of the suffix, safe empty
+  and caret-start handling, keyboard parity, deleting operators, editing
+  settled/grouped results, percentages/decimals, division, negative numbers,
+  and preserving the Scientific controls/mobile layout. No console errors.
+- Rebuilt the Android asset and APK as **3.1.1 / versionCode 32**, with
+  matching full-SDK build metadata and updated APK checksum. Android's
+  `apksigner` verifies all v1/v2/v3 signatures. Device installation has not
+  been tested in this environment.
+- The earlier private signing key was not retained in this fresh build
+  environment. This APK therefore uses a new development signing key:
+  Android may require uninstalling the previous app first, which clears
+  its saved settings and history. No signing material is committed.
+- The local preview contains this change. The public GitHub Pages demo
+  reflects its last deployment until this branch is merged and deployed.
