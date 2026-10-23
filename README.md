@@ -1,6 +1,6 @@
 # Scientific Calculator Pro
 
-**[▶ Try the live demo](https://nematullah9812.github.io/scientific-calculator-pro/)** &nbsp;·&nbsp; [Download the APK](ScientificCalculatorPro.apk?raw=1)
+**[▶ Try the live demo](https://nematullah9812.github.io/scientific-calculator-pro/)** &nbsp;·&nbsp; [Download APK v3.1](https://github.com/NematUllah9812/scientific-calculator-pro/blob/v3.1/ScientificCalculatorPro.apk?raw=true)
 
 A six-mode scientific calculator for Android. The interface is a React 19 app
 built to a single self-contained `index.html`, which a native WebView shell
@@ -90,12 +90,8 @@ npm run dev      # dev server
 npm run build    # -> dist/index.html (single file)
 ```
 
-To ship a web change into the APK, copy the build into the Android assets:
-
-```bash
-cp calculator-app/dist/index.html \
-   AndroidStudioProject/app/src/main/assets/index.html
-```
+The APK build scripts build the web app, normalize its inline script for
+`file://` loading, and sync it into the Android assets automatically.
 
 ### Android
 
@@ -108,7 +104,31 @@ echo "sdk.dir=/path/to/android-sdk" > local.properties
 ./gradlew assembleRelease
 ```
 
-`minSdk 21` / `targetSdk 34`, version 3.0 (code 30).
+`minSdk 21` / `targetSdk 34`, version **3.1** (code **31**).
+
+### SDK-free APK rebuild (Linux x86_64)
+
+For web UI and launcher-resource changes, a full Android SDK is not needed:
+
+```bash
+./build-apk-offline.sh
+```
+
+Requires Node/npm, Python 3, curl, unzip, `sha256sum`, and an authenticated
+`gh` CLI. The first run downloads and caches aapt2, Android API 34 stubs,
+a Java runtime and signing tools under the gitignored `.apktools/` directory.
+It rebuilds the web bundle and Android resources, reuses the prebuilt native
+WebView shell, aligns the APK, and signs it with v1 + v2 + v3. Both payload
+integrity and cryptographic signatures are checked before replacing the APK.
+
+**This route does not compile Java.** A source-hash guard rejects native-shell
+changes; use Android Studio or `build-scientific-calculator-apk.sh` for those.
+
+The first run creates `.apktools/release.jks` if needed; subsequent runs reuse
+it. The default password is for development builds only. Set `KS_PASS` before
+the first run for a private password, and **back up the keystore securely** —
+losing it means future APKs cannot update an existing installation. Never
+commit it or upload it to a public release.
 
 ---
 
@@ -132,9 +152,21 @@ unaffected. Generate your own key — never reuse someone else's.
 
 ## Prebuilt APK
 
-`ScientificCalculatorPro.apk` is checked in for convenience and reflects the
-current source, including the redesigned interface.
+[Download v3.1](https://github.com/NematUllah9812/scientific-calculator-pro/blob/v3.1/ScientificCalculatorPro.apk?raw=true)
+(**181,662 bytes**, Android 5.0/API 21 minimum, with an up-to-date Android
+System WebView). The checked-in APK includes the redesigned UI, the new
+launcher logo and the scientific-input fixes.
 
-Signed with v1 + v2 + v3 signature schemes using a development key, so
-Android will warn about an unknown developer — enable "install from unknown
-sources" to sideload it.
+- Verified with Android's `apksigner`: **v1, v2 and v3 signatures pass**.
+- SHA-256: `47b584c8a6dc5eefa482bab6c784d58b98e4e122690bc9cb5d1af26905e5e9ea`
+- The packaged `assets/index.html` was extracted and browser-tested from
+  `file://`, including a calculation; no console errors. A physical Android
+  device installation has not been tested here.
+
+Open the APK on your phone and allow installation from that browser/file
+manager when prompted. **This build uses a new development signing key.**
+If an older build is installed, Android may require uninstalling it first;
+that removes its saved settings and history.
+
+[Live browser demo](https://nematullah9812.github.io/scientific-calculator-pro/)
+— GitHub Pages serves the same web bundle.

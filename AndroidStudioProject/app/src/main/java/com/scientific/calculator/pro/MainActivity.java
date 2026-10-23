@@ -95,13 +95,13 @@ public class MainActivity extends Activity {
         rootLayout.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        rootLayout.setBackgroundColor(Color.parseColor("#090B10"));
+        rootLayout.setBackgroundColor(Color.parseColor("#000000"));
 
         webView = new WebView(this);
         webView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        webView.setBackgroundColor(Color.parseColor("#090B10"));
+        webView.setBackgroundColor(Color.parseColor("#000000"));
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
